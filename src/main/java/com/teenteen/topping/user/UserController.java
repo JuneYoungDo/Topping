@@ -39,6 +39,21 @@ public class UserController {
         return new ResponseEntity(new NicknameRes(userService.isUserNickname(nicknameReq.getNickname())),
                 HttpStatus.valueOf(200));
     }
+    /**
+     * 이메일 확인
+     * [POST] /user/email
+     */
+    @PostMapping("/user/email")
+    public ResponseEntity checkEmail(@RequestBody @Valid UserEmailReq userEmailReq, Errors errors) {
+        if(errors.hasErrors()) {
+            BaseResponseStatus baseResponseStatus = BaseResponseStatus.CUSTOM_ERROR;
+            baseResponseStatus.setMessage(errors.getFieldError().getDefaultMessage());
+            return new ResponseEntity(new BaseResponse(baseResponseStatus),
+                    HttpStatus.valueOf(baseResponseStatus.getStatus()));
+        }
+        return new ResponseEntity(new UserEmailRes(userService.isUsedEmail(userEmailReq.getEmail())),
+                HttpStatus.valueOf(200));
+    }
 
     /**
      * 회원가입
@@ -65,7 +80,7 @@ public class UserController {
      * 회원가입 이메일 인증
      * [POST] /user/email
      */
-    @PostMapping("/user/email")
+    @PostMapping("/user/email/check")
     public ResponseEntity checkEmail(@RequestBody @Valid SendEmailReq sendEmailReq,Errors errors) {
         if(errors.hasErrors()) {
             BaseResponseStatus baseResponseStatus = BaseResponseStatus.CUSTOM_ERROR;
