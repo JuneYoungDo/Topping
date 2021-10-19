@@ -13,15 +13,14 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
+    private String gender;
+    private String birth;
+    private String nickname;
 
     private String email;
     private String password;
-    private String gender;
-    private int age;
-    @Column(updatable = false)
-    private String birth;
+
     private int level;
-    private String nickname;
     private String refreshToken;
     private boolean isDeleted;
     private Date createdAt;

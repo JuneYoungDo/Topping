@@ -31,12 +31,23 @@ public class UserService {
         if(isUsedEmail(signUpReq.getEmail())) throw new BaseException(EXISTS_USER_EMAIL);
         if(isUserNickname(signUpReq.getNickname())) throw new BaseException(USED_NICKNAME);
         try {
-            User user = new User();
+            User user = new User(signUpReq.getUserId(),
+                    signUpReq.getGender(),
+                    signUpReq.getBirth(),
+                    signUpReq.getNickname(),
+                    signUpReq.getEmail(),
+                    bcrypt.encrypt(signUpReq.getPassword()),
+                    0,
+                    "",
+                    false,
+                    new Date()
+            );
             save(user);
         } catch (Exception exception) {
             throw new BaseException(PASSWORD_ENCRYPTION_ERROR);
         }
     }
+
     public boolean isUserNickname(String nickname) {
         User user = userRepository.findByNickname(nickname).orElse(null);
         if(user != null && user.isDeleted() == false)
