@@ -3,9 +3,7 @@ package com.teenteen.topping.user;
 import com.teenteen.topping.Config.BaseException;
 import com.teenteen.topping.Config.BaseResponse;
 import com.teenteen.topping.Config.BaseResponseStatus;
-import com.teenteen.topping.user.UserDto.SendEmailReq;
-import com.teenteen.topping.user.UserDto.SendEmailRes;
-import com.teenteen.topping.user.UserDto.SignUpReq;
+import com.teenteen.topping.user.UserDto.*;
 import com.teenteen.topping.utils.JwtService;
 import com.teenteen.topping.utils.mail.MailDto;
 import com.teenteen.topping.utils.mail.SendEmailService;
@@ -25,6 +23,37 @@ public class UserController {
     private final UserService userService;
     private final JwtService jwtService;
     private final SendEmailService sendEmailService;
+
+    /**
+     * 닉네임 확인
+     * [POST] /user/name
+     */
+    @PostMapping("/user/name")
+    public ResponseEntity checkNickname(@RequestBody @Valid NicknameReq nicknameReq, Errors errors) {
+        if(errors.hasErrors()) {
+            BaseResponseStatus baseResponseStatus = BaseResponseStatus.CUSTOM_ERROR;
+            baseResponseStatus.setMessage(errors.getFieldError().getDefaultMessage());
+            return new ResponseEntity(new BaseResponse(baseResponseStatus),
+                    HttpStatus.valueOf(baseResponseStatus.getStatus()));
+        }
+        return new ResponseEntity(new NicknameRes(userService.isUserNickname(nicknameReq.getNickname())),
+                HttpStatus.valueOf(200));
+    }
+    /**
+     * 이메일 확인
+     * [POST] /user/email
+     */
+    @PostMapping("/user/email")
+    public ResponseEntity checkEmail(@RequestBody @Valid UserEmailReq userEmailReq, Errors errors) {
+        if(errors.hasErrors()) {
+            BaseResponseStatus baseResponseStatus = BaseResponseStatus.CUSTOM_ERROR;
+            baseResponseStatus.setMessage(errors.getFieldError().getDefaultMessage());
+            return new ResponseEntity(new BaseResponse(baseResponseStatus),
+                    HttpStatus.valueOf(baseResponseStatus.getStatus()));
+        }
+        return new ResponseEntity(new UserEmailRes(userService.isUsedEmail(userEmailReq.getEmail())),
+                HttpStatus.valueOf(200));
+    }
 
     /**
      * 회원가입
@@ -51,7 +80,7 @@ public class UserController {
      * 회원가입 이메일 인증
      * [POST] /user/email
      */
-    @PostMapping("/user/email")
+    @PostMapping("/user/email/check")
     public ResponseEntity checkEmail(@RequestBody @Valid SendEmailReq sendEmailReq,Errors errors) {
         if(errors.hasErrors()) {
             BaseResponseStatus baseResponseStatus = BaseResponseStatus.CUSTOM_ERROR;
@@ -62,6 +91,20 @@ public class UserController {
         MailDto mailDto = sendEmailService.createMail(sendEmailReq.getEmail());
         sendEmailService.mailSend(mailDto);
         return new ResponseEntity(new SendEmailRes(mailDto.getStr()),HttpStatus.valueOf(200));
+    }
+
+    /**
+     * 로그인
+     * [POST] /login
+     */
+    @PostMapping("/login")
+    public ResponseEntity login(@RequestBody LoginReq loginReq) {
+        try{
+            return new ResponseEntity(userService.login(loginReq),HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
     }
 
 }

@@ -1,6 +1,8 @@
 package com.teenteen.topping.user;
 
 import com.teenteen.topping.Config.BaseException;
+import com.teenteen.topping.user.UserDto.LoginReq;
+import com.teenteen.topping.user.UserDto.LoginRes;
 import com.teenteen.topping.user.UserDto.SignUpReq;
 import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.Bcrypt;
@@ -30,13 +32,12 @@ public class UserService {
         if(isUserNickname(signUpReq.getNickname())) throw new BaseException(USED_NICKNAME);
         try {
             User user = new User(signUpReq.getUserId(),
+                    signUpReq.getGender(),
+                    signUpReq.getBirth(),
+                    signUpReq.getNickname(),
                     signUpReq.getEmail(),
                     bcrypt.encrypt(signUpReq.getPassword()),
-                    signUpReq.getGender(),
-                    signUpReq.getAge(),
-                    signUpReq.getBirth(),
                     0,
-                    signUpReq.getNickname(),
                     "",
                     false,
                     new Date()
@@ -46,6 +47,7 @@ public class UserService {
             throw new BaseException(PASSWORD_ENCRYPTION_ERROR);
         }
     }
+
     public boolean isUserNickname(String nickname) {
         User user = userRepository.findByNickname(nickname).orElse(null);
         if(user != null && user.isDeleted() == false)
@@ -60,5 +62,17 @@ public class UserService {
             return true;
         else
             return false;
+    }
+
+    public LoginRes login(LoginReq loginReq) throws BaseException {
+        User user = userRepository.findByEmail(loginReq.getEmail()).orElse(null);
+        if(user == null || user.isDeleted()) throw new BaseException(USER_IS_NOT_AVAILABLE);
+        if(!comparePwd(loginReq.getPassword(), user.getPassword())) throw new BaseException(DO_NOT_MATCH_PASSWORD);
+        user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
+        return new LoginRes(jwtService.createJwt(user.getUserId()),user.getRefreshToken());
+    }
+
+    public boolean comparePwd(String loginPwd,String dbPwd) {
+        return bcrypt.isMatch(loginPwd,dbPwd);
     }
 }
