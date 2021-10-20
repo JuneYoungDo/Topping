@@ -23,7 +23,7 @@ application.yml
 *.yml
 Secret.java
 src/main/java/com/teenteen/topping/utils/Secret.java
-
+Dockerfile
 
 ### IntelliJ IDEA ###
 .idea
