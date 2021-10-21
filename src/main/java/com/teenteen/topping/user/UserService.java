@@ -3,6 +3,7 @@ package com.teenteen.topping.user;
 import com.teenteen.topping.Config.BaseException;
 import com.teenteen.topping.user.UserDto.LoginReq;
 import com.teenteen.topping.user.UserDto.LoginRes;
+import com.teenteen.topping.user.UserDto.RefreshTokenReq;
 import com.teenteen.topping.user.UserDto.SignUpReq;
 import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.Bcrypt;
@@ -29,7 +30,7 @@ public class UserService {
 
     public void createUser(SignUpReq signUpReq) throws BaseException {
         String tmp = isUsedEmail(signUpReq.getEmail());
-        if(tmp == "usi") throw new BaseException(EXISTS_USER_EMAIL);
+        if(tmp == "using") throw new BaseException(EXISTS_USER_EMAIL);
         else if(tmp == "deleted") throw new BaseException(DELETED_EMAIL);
         if(isUserNickname(signUpReq.getNickname())) throw new BaseException(USED_NICKNAME);
         try {
@@ -65,6 +66,7 @@ public class UserService {
         else return "using";
     }
 
+    @Transactional
     public LoginRes login(LoginReq loginReq) throws BaseException {
         User user = userRepository.findByEmail(loginReq.getEmail()).orElse(null);
         if(user == null || user.isDeleted()) throw new BaseException(USER_IS_NOT_AVAILABLE);
@@ -75,5 +77,20 @@ public class UserService {
 
     public boolean comparePwd(String loginPwd,String dbPwd) {
         return bcrypt.isMatch(loginPwd,dbPwd);
+    }
+
+    public LoginRes renewalAccessToken(RefreshTokenReq refreshTokenReq) throws BaseException {
+        String refreshToken = refreshTokenReq.getRefreshToken();
+        if(refreshToken.equals("")||refreshToken.length()==0) throw new BaseException(EMPTY_REFRESH_TOKEN);
+        if(!jwtService.verifyJWT(refreshToken)) throw new BaseException(INVALID_TOKEN);
+        else {
+            Long userId = jwtService.getUserIdFromRefreshToken(refreshToken);
+            User user = userRepository.findByUserId(userId).orElse(null);
+
+            if(refreshToken.equals(user.getRefreshToken()))
+                return new LoginRes(jwtService.createJwt(userId), refreshToken);
+            else
+                throw new BaseException(INVALID_TOKEN);
+        }
     }
 }

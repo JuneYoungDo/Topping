@@ -107,4 +107,18 @@ public class UserController {
         }
     }
 
+    /**
+     * refreshToken을 이용한 accessToken 재발급
+     * [POST] /login/refresh
+     */
+    @PostMapping("/login/refresh")
+    public ResponseEntity renewalAccessToken(@RequestBody RefreshTokenReq refreshTokenReq) {
+        try{
+            return new ResponseEntity(userService.renewalAccessToken(refreshTokenReq),HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
 }
