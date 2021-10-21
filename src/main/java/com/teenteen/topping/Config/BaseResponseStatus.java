@@ -14,6 +14,7 @@ public enum BaseResponseStatus {
     EXISTS_USER_EMAIL(400,"이미 사용중인 이메일입니다.",105),
     USED_NICKNAME(400,"이미 사용중인 닉네임입니다.",106),
     DO_NOT_MATCH_PASSWORD(400,"정보가 일치하지 않습니다.",107),
+    DELETED_EMAIL(400,"탈퇴된 회원입니다.",108),
 
     PASSWORD_ENCRYPTION_ERROR(500, "비밀번호 암호화에 실패하였습니다.", 198),
     PASSWORD_DECRYPTION_ERROR(500, "비밀번호 복호화에 실패하였습니다.", 199);

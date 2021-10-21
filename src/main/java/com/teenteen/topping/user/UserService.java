@@ -28,7 +28,9 @@ public class UserService {
     }
 
     public void createUser(SignUpReq signUpReq) throws BaseException {
-        if(isUsedEmail(signUpReq.getEmail())) throw new BaseException(EXISTS_USER_EMAIL);
+        String tmp = isUsedEmail(signUpReq.getEmail());
+        if(tmp == "usi") throw new BaseException(EXISTS_USER_EMAIL);
+        else if(tmp == "deleted") throw new BaseException(DELETED_EMAIL);
         if(isUserNickname(signUpReq.getNickname())) throw new BaseException(USED_NICKNAME);
         try {
             User user = new User(signUpReq.getUserId(),
@@ -56,12 +58,11 @@ public class UserService {
             return false;
     }
 
-    public boolean isUsedEmail(String email) {
+    public String isUsedEmail(String email) {
         User user = userRepository.findByEmail(email).orElse(null);
-        if(user != null && user.isDeleted()==false)  // 사용자가 있고 삭제가 안되어 있다면 사용 불가
-            return true;
-        else
-            return false;
+        if(user == null) return "free";
+        else if(user.isDeleted() == true) return "deleted";
+        else return "using";
     }
 
     public LoginRes login(LoginReq loginReq) throws BaseException {

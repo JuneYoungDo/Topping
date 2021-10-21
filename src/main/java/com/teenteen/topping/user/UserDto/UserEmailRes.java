@@ -7,5 +7,5 @@ import lombok.Setter;
 
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class UserEmailRes {
-    private Boolean isUsedEmail;
+    private String isUsedEmail;
 }
