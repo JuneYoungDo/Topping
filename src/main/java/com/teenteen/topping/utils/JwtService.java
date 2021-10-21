@@ -89,11 +89,11 @@ public class JwtService {
         return claims.getBody().get("userId", Long.class);
     }
 
-    public Long getUserIdFromAccessToken(String accessToken) {
+    public Long getUserIdFromRefreshToken(String accessToken) {
         Jws<Claims> claims;
 
         claims = Jwts.parser()
-                .setSigningKey(Secret.JWT_SECRET_KEY)
+                .setSigningKey(Secret.REFRESH_SECRET_KEY)
                 .parseClaimsJws(accessToken);
 
         return claims.getBody().get("userId",Long.class);

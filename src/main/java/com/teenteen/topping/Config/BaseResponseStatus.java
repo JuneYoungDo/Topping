@@ -16,6 +16,9 @@ public enum BaseResponseStatus {
     DO_NOT_MATCH_PASSWORD(400,"정보가 일치하지 않습니다.",107),
     DELETED_EMAIL(400,"탈퇴된 회원입니다.",108),
 
+    EMPTY_REFRESH_TOKEN(400,"refreshToken이 없습니다.",109),
+    INVALID_TOKEN(400,"유효하지 않은 토큰입니다.",110),
+
     PASSWORD_ENCRYPTION_ERROR(500, "비밀번호 암호화에 실패하였습니다.", 198),
     PASSWORD_DECRYPTION_ERROR(500, "비밀번호 복호화에 실패하였습니다.", 199);
 
