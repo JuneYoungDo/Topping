@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import javax.persistence.*;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
@@ -23,5 +23,5 @@ public class User {
     private int level;
     private String refreshToken;
     private boolean isDeleted;
-    private Date createdAt;
+    private LocalDateTime createdAt;
 }

@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 import static com.teenteen.topping.Config.BaseResponseStatus.*;
@@ -43,7 +44,7 @@ public class UserService {
                     0,
                     "",
                     false,
-                    new Date()
+                    LocalDateTime.now()
             );
             save(user);
         } catch (Exception exception) {
