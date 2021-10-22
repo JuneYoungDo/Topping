@@ -81,13 +81,7 @@ public class UserController {
      * [POST] /user/email
      */
     @PostMapping("/user/email/check")
-    public ResponseEntity checkEmail(@RequestBody @Valid SendEmailReq sendEmailReq,Errors errors) {
-        if(errors.hasErrors()) {
-            BaseResponseStatus baseResponseStatus = BaseResponseStatus.CUSTOM_ERROR;
-            baseResponseStatus.setMessage(errors.getFieldError().getDefaultMessage());
-            return new ResponseEntity(new BaseResponse(baseResponseStatus),
-                    HttpStatus.valueOf(baseResponseStatus.getStatus()));
-        }
+    public ResponseEntity checkEmail(@RequestBody SendEmailReq sendEmailReq) {
         MailDto mailDto = sendEmailService.createMail(sendEmailReq.getEmail());
         sendEmailService.mailSend(mailDto);
         return new ResponseEntity(new SendEmailRes(mailDto.getStr()),HttpStatus.valueOf(200));
