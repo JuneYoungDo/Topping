@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Builder
 @Getter
@@ -14,13 +15,13 @@ import java.sql.Timestamp;
 public class BaseResponse<T> {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private T result;
-    private Timestamp timestamp;
+    private LocalDateTime timestamp;
     private int status;       // HTTP STATUS
     private String message;
     private int code;         // CUSTOM CODE
 
     public BaseResponse(BaseResponseStatus status) {
-        this.timestamp = status.getTimestamp();
+        this.timestamp = LocalDateTime.now();
         this.status = status.getStatus();
         this.message = status.getMessage();
         this.code = status.getCode();
