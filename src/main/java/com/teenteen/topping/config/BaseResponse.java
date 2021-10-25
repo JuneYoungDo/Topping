@@ -1,11 +1,10 @@
-package com.teenteen.topping.Config;
+package com.teenteen.topping.config;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Builder

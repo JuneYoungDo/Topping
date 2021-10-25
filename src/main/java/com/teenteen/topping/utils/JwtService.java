@@ -1,7 +1,7 @@
 package com.teenteen.topping.utils;
 
-import com.teenteen.topping.Config.BaseException;
-import com.teenteen.topping.Config.BaseResponseStatus;
+import com.teenteen.topping.config.BaseException;
+import com.teenteen.topping.config.BaseResponseStatus;
 import io.jsonwebtoken.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
