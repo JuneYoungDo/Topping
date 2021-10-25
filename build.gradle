@@ -29,12 +29,18 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-web'
 
+    // auth
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
+
+    // jwt
     implementation group: 'io.jsonwebtoken', name: 'jjwt', version: '0.9.0'
 
+    // bcrypt
     implementation group: 'org.mindrot', name: 'jbcrypt', version: '0.3m'
 
     compileOnly 'org.projectlombok:lombok'
 
+    // mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     annotationProcessor 'org.projectlombok:lombok'

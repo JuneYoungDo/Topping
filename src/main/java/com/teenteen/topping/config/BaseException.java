@@ -1,4 +1,4 @@
-package com.teenteen.topping.Config;
+package com.teenteen.topping.config;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
