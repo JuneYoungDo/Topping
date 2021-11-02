@@ -6,17 +6,17 @@ import com.teenteen.topping.config.BaseResponseStatus;
 import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
 import com.teenteen.topping.utils.JwtService;
+import com.teenteen.topping.utils.S3Service;
 import com.teenteen.topping.utils.mail.SendEmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,7 +24,7 @@ public class UserController {
     private final UserService userService;
     private final JwtService jwtService;
     private final SendEmailService sendEmailService;
-
+    private final S3Service s3Service;
     /**
      * 닉네임 확인
      * [POST] /user/name
@@ -46,11 +46,20 @@ public class UserController {
      * [POST] /{socialLoginType}/login
      * @param socialLoginType (KAKAO, APPLE)
      */
+    @PostMapping("/{socialLoginType}/login")
     public ResponseEntity socialLogin(@RequestBody SocialLoginReq socialLoginReq,
                                       @PathVariable(name = "socialLoginType") SocialLoginType socialLoginType) {
-
+        try{
+            return new ResponseEntity(userService.socialLogin(socialLoginType,socialLoginReq.getIdToken()),
+                    HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }catch (IOException e) {
+            return new ResponseEntity(new BaseResponse(BaseResponseStatus.INVALID_TOKEN),
+                    HttpStatus.valueOf(400));
+        }
     }
-
 
     /**
      * 로그인
@@ -80,4 +89,9 @@ public class UserController {
         }
     }
 
+    @GetMapping("/test")
+    public ResponseEntity test(@RequestPart(value = "file", required = true)
+                                           MultipartFile multipartFile) throws IOException {
+        return new ResponseEntity(s3Service.upload(multipartFile)+System.currentTimeMillis(),HttpStatus.valueOf(200));
+    }
 }

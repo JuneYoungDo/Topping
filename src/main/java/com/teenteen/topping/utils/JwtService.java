@@ -63,8 +63,10 @@ public class JwtService {
                     .parseClaimsJws(jwt)
                     .getBody();
         } catch (ExpiredJwtException e) {   // 토큰 만료
+            System.out.println(e);
             return false;
         } catch (Exception e) {     // 그 외 에러
+            System.out.println(e);
             return false;
         }
         return true;
