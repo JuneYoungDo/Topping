@@ -38,6 +38,13 @@ dependencies {
     // bcrypt
     implementation group: 'org.mindrot', name: 'jbcrypt', version: '0.3m'
 
+    // gson
+    implementation 'com.google.code.gson:gson:2.8.7'
+
+    // aws s3
+    implementation group: 'org.springframework.cloud', name: 'spring-cloud-aws', version: '2.2.1.RELEASE', ext: 'pom'
+    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.901'
+
     compileOnly 'org.projectlombok:lombok'
 
     // mail
