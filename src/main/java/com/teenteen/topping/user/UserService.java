@@ -1,15 +1,19 @@
 package com.teenteen.topping.user;
 
 import com.teenteen.topping.config.BaseException;
+import com.teenteen.topping.oauth.OauthService.AppleService2;
+import com.teenteen.topping.oauth.OauthService.KakaoService;
 import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
 import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.Bcrypt;
 import com.teenteen.topping.utils.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.jni.Local;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.io.IOException;
 import java.time.LocalDateTime;
 
 import static com.teenteen.topping.config.BaseResponseStatus.*;
@@ -20,33 +24,25 @@ public class UserService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final Bcrypt bcrypt;
+    private final KakaoService kakaoService;
+    private final AppleService2 appleService2;
 
     @Transactional
     public void save(User user) {
         userRepository.save(user);
     }
 
-    public void createUser(SignUpReq signUpReq) throws BaseException {
-        String tmp = isUsedEmail(signUpReq.getEmail());
-        if (tmp == "using") throw new BaseException(EXISTS_USER_EMAIL);
-        else if (tmp == "deleted") throw new BaseException(DELETED_EMAIL);
-        if (isUserNickname(signUpReq.getNickname())) throw new BaseException(USED_NICKNAME);
-        try {
-            User user = new User(signUpReq.getUserId(),
-                    signUpReq.getGender(),
-                    signUpReq.getBirth(),
-                    signUpReq.getNickname(),
-                    signUpReq.getEmail(),
-                    bcrypt.encrypt(signUpReq.getPassword()),
-                    0,
-                    "",
-                    false,
-                    LocalDateTime.now()
-            );
-            save(user);
-        } catch (Exception exception) {
-            throw new BaseException(PASSWORD_ENCRYPTION_ERROR);
-        }
+    public void createUser(String email) {
+        User user = User.builder()
+                .email(email)
+                .birth(null)
+                .nickname(null)
+                .level(0)
+                .refreshToken("")
+                .deleted(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+        save(user);
     }
 
     public boolean isUserNickname(String nickname) {
@@ -65,21 +61,32 @@ public class UserService {
     }
 
     @Transactional
-    public SocialLoginRes socialLogin(SocialLoginType socialLoginType, String idToken) {
+    public LoginRes socialLogin(SocialLoginType socialLoginType, String idToken) throws BaseException, IOException {
+        if (idToken.equals("") || idToken == null) throw new BaseException(EMPTY_ID_TOKEN);
+        String email = "";
+        if (socialLoginType.equals(SocialLoginType.KAKAO)) email = kakaoService.getKakaoUserInfo(idToken);
+        else if(socialLoginType.equals(SocialLoginType.APPLE)) {
+            appleService2.getClaimsBy("123");
+        }
+        String tmp = isUsedEmail(email);
+        if (tmp == "using") { // 로그인
+            User user = userRepository.findByEmail(email).orElse(null);
+            user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
+            return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken());
+        } else if(tmp == "deleted"){ // 삭제된 계정
 
+        } else {    // 회원 가입
+            createUser(email);
+        }
+        return new LoginRes("123","123");
     }
 
     @Transactional
     public LoginRes login(LoginReq loginReq) throws BaseException {
         User user = userRepository.findByEmail(loginReq.getEmail()).orElse(null);
         if (user == null || user.isDeleted()) throw new BaseException(USER_IS_NOT_AVAILABLE);
-        if (!comparePwd(loginReq.getPassword(), user.getPassword())) throw new BaseException(DO_NOT_MATCH_PASSWORD);
-        user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
+       user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
         return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken());
-    }
-
-    public boolean comparePwd(String loginPwd, String dbPwd) {
-        return bcrypt.isMatch(loginPwd, dbPwd);
     }
 
     public LoginRes renewalAccessToken(RefreshTokenReq refreshTokenReq) throws BaseException {

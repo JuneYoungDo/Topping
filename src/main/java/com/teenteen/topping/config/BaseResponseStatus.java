@@ -18,6 +18,8 @@ public enum BaseResponseStatus {
     EMPTY_REFRESH_TOKEN(400,"refreshToken이 없습니다.",109),
     INVALID_TOKEN(400,"유효하지 않은 토큰입니다.",110),
     EMPTY_ID_TOKEN(400,"id토큰이 없습니다.",111),
+    FAILED_TO_APPLE_LOGIN(400,"애플 로그인에 실패하였습니다.",112),
+    FAILED_TO_FIND_AVAILABLE_RSA(400,"암호키를 찾지 못하였습니다.",113),
 
     PASSWORD_ENCRYPTION_ERROR(500, "비밀번호 암호화에 실패하였습니다.", 198),
     PASSWORD_DECRYPTION_ERROR(500, "비밀번호 복호화에 실패하였습니다.", 199);
