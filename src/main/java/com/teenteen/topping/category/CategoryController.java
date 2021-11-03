@@ -5,6 +5,7 @@ import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponse;
+import com.teenteen.topping.config.BaseResponseStatus;
 import com.teenteen.topping.utils.JwtService;
 import com.teenteen.topping.video.VideoRepository;
 import lombok.RequiredArgsConstructor;
@@ -55,14 +56,11 @@ public class CategoryController {
      */
     @PostMapping("/main")
     public ResponseEntity getMainCategory(@RequestBody MainCategoryReq mainCategoryReq) {
-        try {
-            Long userId = jwtService.getUserId();
-            return new ResponseEntity(categoryService.mainFeedCategory(mainCategoryReq.makePicks()),
+        if (mainCategoryReq.getPick1() == null || mainCategoryReq.getPick2() == null
+                || mainCategoryReq.getPick3() == null)
+            return new ResponseEntity(new BaseResponse(BaseResponseStatus.INVALID_INPUT_NUM),
+                    HttpStatus.valueOf(400));
+        return new ResponseEntity(categoryService.mainFeedCategory(mainCategoryReq.makePicks()),
                     HttpStatus.valueOf(200));
-
-        } catch (BaseException exception) {
-            return new ResponseEntity(new BaseResponse(exception.getStatus()),
-                    HttpStatus.valueOf(exception.getStatus().getStatus()));
-        }
     }
 }

@@ -6,6 +6,7 @@ import com.teenteen.topping.category.CategoryDto.MainFeedRes;
 import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.challenge.ChallengeDto.ChallengeListRes;
 import com.teenteen.topping.challenge.VO.Challenge;
+import com.teenteen.topping.utils.Secret;
 import com.teenteen.topping.video.VO.Video;
 import com.teenteen.topping.video.VideoDto.VideoListByCategoryRes;
 import com.teenteen.topping.video.VideoRepository;
@@ -35,7 +36,7 @@ public class CategoryService {
         for (int i = 0; i < videoList.size(); i++) {
             Video video = videoList.get(i);
             videoListByCategoryRes.add(new VideoListByCategoryRes(
-                    video.getUrl(),
+                    Secret.CLOUD_FRONT_URL + "/" + video.getUrl(),
                     video.getUser().getUserId(),
                     video.getUser().getNickname()
             ));
@@ -45,7 +46,7 @@ public class CategoryService {
 
     public MainFeedRes mainFeedCategory(List<Long> picks) {
         List<Long> origin = new ArrayList();
-        for(int i=0;i<picks.size();i++) {
+        for (int i = 0; i < picks.size(); i++) {
             origin.add(picks.get(i));
         }
         List<MainCategoryRes> returnList = new ArrayList<>();
@@ -74,7 +75,7 @@ public class CategoryService {
             categoryMap.remove(randomKey);
         }
 
-        return new MainFeedRes(returnList,mainFeedTopping(origin));
+        return new MainFeedRes(returnList, mainFeedTopping(origin));
     }
 
     public List<ChallengeListRes> mainFeedTopping(List<Long> list) {
