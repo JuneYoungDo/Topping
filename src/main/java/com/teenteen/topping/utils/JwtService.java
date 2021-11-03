@@ -56,10 +56,27 @@ public class JwtService {
     /*
    JWT 검증(refreshToken)
     */
-    public Boolean verifyJWT(String jwt) {
+    public Boolean verifyRefreshJWT(String jwt) {
         try {
             Claims claims = Jwts.parser()
                     .setSigningKey(Secret.REFRESH_SECRET_KEY)
+                    .parseClaimsJws(jwt)
+                    .getBody();
+        } catch (ExpiredJwtException e) {   // 토큰 만료
+            System.out.println(e);
+            return false;
+        } catch (Exception e) {     // 그 외 에러
+            System.out.println(e);
+            return false;
+        }
+        return true;
+    } /*
+   JWT 검증(refreshToken)
+    */
+    public Boolean verifyJWT(String jwt) {
+        try {
+            Claims claims = Jwts.parser()
+                    .setSigningKey(Secret.JWT_SECRET_KEY)
                     .parseClaimsJws(jwt)
                     .getBody();
         } catch (ExpiredJwtException e) {   // 토큰 만료
@@ -82,6 +99,8 @@ public class JwtService {
         if (accessToken.equals("") || accessToken.length() == 0) {
             throw new BaseException(BaseResponseStatus.EMPTY_JWT);
         }
+        if(!verifyJWT(accessToken))
+            throw new BaseException(BaseResponseStatus.INVALID_JWT);
         // parsing
         Jws<Claims> claims;
         claims = Jwts.parser()

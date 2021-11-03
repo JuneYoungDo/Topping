@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
-public class UserEmailRes {
-    private String isUsedEmail;
+public class AddBasicInfoReq {
+    private String birth;
+    private String nickName;
 }
