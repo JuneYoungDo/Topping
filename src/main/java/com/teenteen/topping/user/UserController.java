@@ -23,52 +23,55 @@ import java.io.IOException;
 public class UserController {
     private final UserService userService;
     private final JwtService jwtService;
-    private final SendEmailService sendEmailService;
     private final S3Service s3Service;
+
     /**
      * 닉네임 확인
      * [POST] /user/name
      */
     @PostMapping("/user/name")
     public ResponseEntity checkNickname(@RequestBody @Valid NicknameReq nicknameReq, Errors errors) {
-        if(errors.hasErrors()) {
+        if (errors.hasErrors()) {
             BaseResponseStatus baseResponseStatus = BaseResponseStatus.CUSTOM_ERROR;
             baseResponseStatus.setMessage(errors.getFieldError().getDefaultMessage());
             return new ResponseEntity(new BaseResponse(baseResponseStatus),
                     HttpStatus.valueOf(baseResponseStatus.getStatus()));
         }
-        return new ResponseEntity(new NicknameRes(userService.isUserNickname(nicknameReq.getNickname())),
+        return new ResponseEntity(new NicknameRes(userService.isUsedNickname(nicknameReq.getNickname())),
                 HttpStatus.valueOf(200));
     }
 
     /**
      * 소셜 로그인(KAKAO)
      * [POST] /{socialLoginType}/login
+     *
      * @param socialLoginType (KAKAO, APPLE)
      */
     @PostMapping("/{socialLoginType}/login")
     public ResponseEntity socialLogin(@RequestBody SocialLoginReq socialLoginReq,
                                       @PathVariable(name = "socialLoginType") SocialLoginType socialLoginType) {
-        try{
-            return new ResponseEntity(userService.socialLogin(socialLoginType,socialLoginReq.getIdToken()),
+        try {
+            return new ResponseEntity(userService.socialLogin(socialLoginType, socialLoginReq.getIdToken()),
                     HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
-        }catch (IOException e) {
+        } catch (IOException e) {
             return new ResponseEntity(new BaseResponse(BaseResponseStatus.INVALID_TOKEN),
                     HttpStatus.valueOf(400));
         }
     }
 
     /**
-     * 로그인
-     * [POST] /login
+     * 추가 정보 기입
+     * [POST] /info
      */
-    @PostMapping("/login")
-    public ResponseEntity login(@RequestBody LoginReq loginReq) {
-        try{
-            return new ResponseEntity(userService.login(loginReq),HttpStatus.valueOf(200));
+    @PostMapping("/info")
+    public ResponseEntity addBasicInfo(@RequestBody AddBasicInfoReq addBasicInfoReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            return new ResponseEntity(userService.editBasicInfo(userId,addBasicInfoReq),
+                    HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
@@ -81,8 +84,8 @@ public class UserController {
      */
     @PostMapping("/login/refresh")
     public ResponseEntity renewalAccessToken(@RequestBody RefreshTokenReq refreshTokenReq) {
-        try{
-            return new ResponseEntity(userService.renewalAccessToken(refreshTokenReq),HttpStatus.valueOf(200));
+        try {
+            return new ResponseEntity(userService.renewalAccessToken(refreshTokenReq), HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
@@ -91,7 +94,7 @@ public class UserController {
 
     @GetMapping("/test")
     public ResponseEntity test(@RequestPart(value = "file", required = true)
-                                           MultipartFile multipartFile) throws IOException {
-        return new ResponseEntity(s3Service.upload(multipartFile)+System.currentTimeMillis(),HttpStatus.valueOf(200));
+                                       MultipartFile multipartFile) throws IOException {
+        return new ResponseEntity(s3Service.upload(multipartFile), HttpStatus.valueOf(200));
     }
 }

@@ -45,7 +45,15 @@ public class UserService {
         save(user);
     }
 
-    public boolean isUserNickname(String nickname) {
+    @Transactional
+    public AddBasicInfoRes editBasicInfo(Long userId,AddBasicInfoReq addBasicInfoReq) {
+        User user = userRepository.findByUserId(userId).orElse(null);
+        user.setBirth(addBasicInfoReq.getBirth());
+        user.setNickname(addBasicInfoReq.getNickName());
+        return new AddBasicInfoRes(user.getUserId(),user.getEmail(),user.getBirth(),user.getNickname());
+    }
+
+    public boolean isUsedNickname(String nickname) {
         User user = userRepository.findByNickname(nickname).orElse(null);
         if (user != null && user.isDeleted() == false)
             return true;
@@ -74,11 +82,13 @@ public class UserService {
             user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
             return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken());
         } else if(tmp == "deleted"){ // 삭제된 계정
-
+            return new LoginRes("Deleted","Deleted");
         } else {    // 회원 가입
             createUser(email);
+            User user = userRepository.findByEmail(email).orElse(null);
+            user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
+            return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken());
         }
-        return new LoginRes("123","123");
     }
 
     @Transactional
@@ -92,7 +102,7 @@ public class UserService {
     public LoginRes renewalAccessToken(RefreshTokenReq refreshTokenReq) throws BaseException {
         String refreshToken = refreshTokenReq.getRefreshToken();
         if (refreshToken.equals("") || refreshToken.length() == 0) throw new BaseException(EMPTY_REFRESH_TOKEN);
-        if (!jwtService.verifyJWT(refreshToken)) throw new BaseException(INVALID_TOKEN);
+        if (!jwtService.verifyRefreshJWT(refreshToken)) throw new BaseException(INVALID_TOKEN);
         else {
             Long userId = jwtService.getUserIdFromRefreshToken(refreshToken);
             User user = userRepository.findByUserId(userId).orElse(null);
