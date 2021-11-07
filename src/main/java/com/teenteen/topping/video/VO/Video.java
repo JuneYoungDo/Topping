@@ -16,6 +16,7 @@ public class Video {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long videoId;
     private String url;
+    private String thumbnail;
     private boolean deleted;
     private LocalDateTime createdAt;
 

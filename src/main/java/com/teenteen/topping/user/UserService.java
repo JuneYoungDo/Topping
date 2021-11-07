@@ -1,20 +1,23 @@
 package com.teenteen.topping.user;
 
+import com.teenteen.topping.category.CategoryRepository;
+import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.oauth.OauthService.AppleService2;
 import com.teenteen.topping.oauth.OauthService.KakaoService;
 import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
 import com.teenteen.topping.user.VO.User;
-import com.teenteen.topping.utils.Bcrypt;
 import com.teenteen.topping.utils.JwtService;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.jni.Local;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.teenteen.topping.config.BaseResponseStatus.*;
 
@@ -22,8 +25,8 @@ import static com.teenteen.topping.config.BaseResponseStatus.*;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
     private final JwtService jwtService;
-    private final Bcrypt bcrypt;
     private final KakaoService kakaoService;
     private final AppleService2 appleService2;
 
@@ -36,7 +39,7 @@ public class UserService {
         User user = User.builder()
                 .email(email)
                 .birth(null)
-                .nickname(null)
+                .nickname(RandomStringUtils.random(10,true,true))
                 .level(0)
                 .refreshToken("")
                 .deleted(false)
@@ -46,11 +49,21 @@ public class UserService {
     }
 
     @Transactional
-    public AddBasicInfoRes editBasicInfo(Long userId,AddBasicInfoReq addBasicInfoReq) {
+    public void saveUserCategory(Long userId, List<Long> picks) {
+        User user = userRepository.findByUserId(userId).orElse(null);
+        List<Category> categories = new ArrayList();
+        for (int i = 0; i < picks.size(); i++) {
+            categories.add(categoryRepository.getById(picks.get(i)));
+        }
+        user.setCategories(categories);
+    }
+
+    @Transactional
+    public AddBasicInfoRes editBasicInfo(Long userId, AddBasicInfoReq addBasicInfoReq) {
         User user = userRepository.findByUserId(userId).orElse(null);
         user.setBirth(addBasicInfoReq.getBirth());
         user.setNickname(addBasicInfoReq.getNickName());
-        return new AddBasicInfoRes(user.getUserId(),user.getEmail(),user.getBirth(),user.getNickname());
+        return new AddBasicInfoRes(user.getUserId(), user.getEmail(), user.getBirth(), user.getNickname());
     }
 
     public boolean isUsedNickname(String nickname) {
@@ -73,7 +86,7 @@ public class UserService {
         if (idToken.equals("") || idToken == null) throw new BaseException(EMPTY_ID_TOKEN);
         String email = "";
         if (socialLoginType.equals(SocialLoginType.KAKAO)) email = kakaoService.getKakaoUserInfo(idToken);
-        else if(socialLoginType.equals(SocialLoginType.APPLE)) {
+        else if (socialLoginType.equals(SocialLoginType.APPLE)) {
             appleService2.getClaimsBy("123");
         }
         String tmp = isUsedEmail(email);
@@ -81,22 +94,14 @@ public class UserService {
             User user = userRepository.findByEmail(email).orElse(null);
             user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
             return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken());
-        } else if(tmp == "deleted"){ // 삭제된 계정
-            return new LoginRes("Deleted","Deleted");
+        } else if (tmp == "deleted") { // 삭제된 계정 -> 추후 처리
+            return new LoginRes("Deleted", "Deleted");
         } else {    // 회원 가입
             createUser(email);
             User user = userRepository.findByEmail(email).orElse(null);
             user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
             return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken());
         }
-    }
-
-    @Transactional
-    public LoginRes login(LoginReq loginReq) throws BaseException {
-        User user = userRepository.findByEmail(loginReq.getEmail()).orElse(null);
-        if (user == null || user.isDeleted()) throw new BaseException(USER_IS_NOT_AVAILABLE);
-       user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
-        return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken());
     }
 
     public LoginRes renewalAccessToken(RefreshTokenReq refreshTokenReq) throws BaseException {

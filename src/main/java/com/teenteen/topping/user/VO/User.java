@@ -1,5 +1,6 @@
 package com.teenteen.topping.user.VO;
 
+import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.video.VO.Video;
 import lombok.*;
 
@@ -26,4 +27,10 @@ public class User {
 
     @OneToMany(mappedBy = "user")
     private List<Video> videos;
+
+    @ManyToMany
+    @JoinTable(name = "user_category",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "category_id"))
+    private List<Category> categories;
 }

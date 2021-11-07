@@ -47,6 +47,12 @@ dependencies {
 
     compileOnly 'org.projectlombok:lombok'
 
+    // RandomStringUtils
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+
+    // Thumbnail
+    implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.1'
+
     // mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
 
