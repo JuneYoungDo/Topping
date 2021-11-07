@@ -9,10 +9,8 @@ import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.utils.Secret;
 import com.teenteen.topping.video.VO.Video;
 import com.teenteen.topping.video.VideoDto.VideoListByCategoryRes;
-import com.teenteen.topping.video.VideoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -62,7 +60,7 @@ public class CategoryService {
         // map에서 선택된 번호는 바로 returnList에 넣어주고 map에서 삭제
         for (int i = 0; i < picks.size(); i++) {
             category = categoryMap.get(picks.get(i));
-            returnList.add(new MainCategoryRes(category.getCategoryId(), category.getName(), true));
+            returnList.add(new MainCategoryRes(category.getCategoryId(), true));
             categoryMap.remove(picks.get(i));
         }
         // 남아있는 map에서 랜덤하게 남은 갯수만큼 가져온다
@@ -71,7 +69,7 @@ public class CategoryService {
             Long randomKey = (Long) keys[new Random().nextInt(keys.length)];
             category = categoryMap.get(randomKey);
             origin.add(randomKey);
-            returnList.add(new MainCategoryRes(category.getCategoryId(), category.getName(), false));
+            returnList.add(new MainCategoryRes(category.getCategoryId(), false));
             categoryMap.remove(randomKey);
         }
 

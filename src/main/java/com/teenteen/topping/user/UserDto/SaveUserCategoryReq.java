@@ -1,4 +1,4 @@
-package com.teenteen.topping.category.CategoryDto;
+package com.teenteen.topping.user.UserDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
-public class MainCategoryRes {
-    private Long categoryId;
-    private boolean picked;    // 선택된 것인지
+public class SaveUserCategoryReq {
+    private Long category1;
+    private Long category2;
+    private Long category3;
 }

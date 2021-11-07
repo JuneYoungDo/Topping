@@ -1,5 +1,6 @@
 package com.teenteen.topping.user;
 
+import com.teenteen.topping.category.CategoryDto.MainCategoryReq;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponse;
 import com.teenteen.topping.config.BaseResponseStatus;
@@ -7,7 +8,6 @@ import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
 import com.teenteen.topping.utils.JwtService;
 import com.teenteen.topping.utils.S3Service;
-import com.teenteen.topping.utils.mail.SendEmailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -70,7 +70,7 @@ public class UserController {
     public ResponseEntity addBasicInfo(@RequestBody AddBasicInfoReq addBasicInfoReq) {
         try {
             Long userId = jwtService.getUserId();
-            return new ResponseEntity(userService.editBasicInfo(userId,addBasicInfoReq),
+            return new ResponseEntity(userService.editBasicInfo(userId, addBasicInfoReq),
                     HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
@@ -92,9 +92,25 @@ public class UserController {
         }
     }
 
+    /**
+     * 카테고리 저장하기(3개)
+     * [POST] /user/category
+     */
+    @PostMapping("/user/category")
+    public ResponseEntity saveUserCategory(@RequestBody MainCategoryReq mainCategoryReq) {
+        try {
+            Long userId = jwtService.getUserId();
+        } catch (BaseException exception) {
+
+        }
+        return new ResponseEntity(200,HttpStatus.valueOf(200));
+    }
+
     @GetMapping("/test")
     public ResponseEntity test(@RequestPart(value = "file", required = true)
                                        MultipartFile multipartFile) throws IOException {
-        return new ResponseEntity(s3Service.upload(multipartFile), HttpStatus.valueOf(200));
+        //return new ResponseEntity(s3Service.upload(multipartFile), HttpStatus.valueOf(200));
+        return new ResponseEntity(s3Service.uploadThumbnail(multipartFile), HttpStatus.valueOf(200));
     }
+
 }

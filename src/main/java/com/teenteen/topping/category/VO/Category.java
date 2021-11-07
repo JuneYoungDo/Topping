@@ -1,6 +1,7 @@
 package com.teenteen.topping.category.VO;
 
 import com.teenteen.topping.challenge.VO.Challenge;
+import com.teenteen.topping.user.VO.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,4 +22,5 @@ public class Category {
 
     @OneToMany(mappedBy = "category")
     private List<Challenge> challenges;
+
 }
