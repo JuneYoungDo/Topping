@@ -22,6 +22,7 @@ public enum BaseResponseStatus {
     FAILED_TO_FIND_AVAILABLE_RSA(400,"암호키를 찾지 못하였습니다.",113),
 
     INVALID_INPUT_NUM(400,"3개 이상 골라주세요.",114),
+    INVALID_CHALLENGE(400,"유효하지 않은 토핑 id 입니다.",115),
 
     PASSWORD_ENCRYPTION_ERROR(500, "비밀번호 암호화에 실패하였습니다.", 198),
     PASSWORD_DECRYPTION_ERROR(500, "비밀번호 복호화에 실패하였습니다.", 199);

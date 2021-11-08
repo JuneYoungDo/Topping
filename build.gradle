@@ -50,8 +50,9 @@ dependencies {
     // RandomStringUtils
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
 
-    // Thumbnail
-    implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.1'
+    // Jcodec
+    implementation group: 'org.jcodec', name: 'jcodec', version: '0.2.3'
+    implementation group: 'org.jcodec', name: 'jcodec-javase', version: '0.2.3'
 
     // mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'

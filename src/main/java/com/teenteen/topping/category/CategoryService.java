@@ -78,7 +78,7 @@ public class CategoryService {
 
     public List<ChallengeListRes> mainFeedTopping(List<Long> list) {
         List<Category> categoryList = new ArrayList();
-        List<ChallengeListRes> challengeListResList = new ArrayList();
+        List<ChallengeListRes> challengeListRes = new ArrayList();
         for (int i = 0; i < list.size(); i++) {
             categoryList.add(categoryRepository.getById(list.get(i)));
         }
@@ -86,11 +86,20 @@ public class CategoryService {
                 .orElse(null);
         for (int i = 0; i < challengeList.size(); i++) {
             Challenge challenge = challengeList.get(i);
-            challengeListResList.add(new ChallengeListRes(
+            List<Video> videos = categoryRepository
+                    .getRecentVideoByChallenge(challenge, PageRequest.of(0, 1))
+                    .orElse(null);
+            String thumbnailUrl;
+            if (videos.size() == 0) thumbnailUrl = null;
+            else {
+                thumbnailUrl = videos.get(0).getThumbnail();
+            }
+            challengeListRes.add(new ChallengeListRes(
                     challenge.getChallengeId(),
-                    challenge.getName()
+                    challenge.getName(),
+                    thumbnailUrl
             ));
         }
-        return challengeListResList;
+        return challengeListRes;
     }
 }

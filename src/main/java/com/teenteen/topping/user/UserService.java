@@ -1,5 +1,6 @@
 package com.teenteen.topping.user;
 
+import com.teenteen.topping.category.CategoryDto.CategoryListRes;
 import com.teenteen.topping.category.CategoryRepository;
 import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.config.BaseException;
@@ -17,7 +18,9 @@ import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.teenteen.topping.config.BaseResponseStatus.*;
 
@@ -46,16 +49,6 @@ public class UserService {
                 .createdAt(LocalDateTime.now())
                 .build();
         save(user);
-    }
-
-    @Transactional
-    public void saveUserCategory(Long userId, List<Long> picks) {
-        User user = userRepository.findByUserId(userId).orElse(null);
-        List<Category> categories = new ArrayList();
-        for (int i = 0; i < picks.size(); i++) {
-            categories.add(categoryRepository.getById(picks.get(i)));
-        }
-        user.setCategories(categories);
     }
 
     @Transactional
@@ -118,4 +111,37 @@ public class UserService {
                 throw new BaseException(INVALID_TOKEN);
         }
     }
+
+    public List<GetUserCategoryListRes> getCategoryListWithLogin(Long userId) {
+        List<GetUserCategoryListRes> userCategoryList = new ArrayList();
+        User user = userRepository.getById(userId);
+        List<CategoryListRes> categories = categoryRepository.
+                findByDeleted(false).orElse(null);
+
+        Map<Long,Boolean> categoryMap = new HashMap();
+        for(int i=0;i<user.getCategories().size();i++) {
+            categoryMap.put(user.getCategories().get(i).getCategoryId(),true);
+        }
+        boolean isPicked;
+        for(int i=0;i<categories.size();i++) {
+            isPicked = false;
+            if(categoryMap.containsKey(categories.get(i).getCategoryId())) isPicked = true;
+            userCategoryList.add(new GetUserCategoryListRes(
+                    categories.get(i).getCategoryId(),
+                    isPicked
+            ));
+        }
+        return userCategoryList;
+    }
+
+    @Transactional
+    public void saveUserCategory(Long userId, List<Long> picks) {
+        User user = userRepository.findByUserId(userId).orElse(null);
+        List<Category> categories = new ArrayList();
+        for (int i = 0; i < picks.size(); i++) {
+            categories.add(categoryRepository.getById(picks.get(i)));
+        }
+        user.setCategories(categories);
+    }
+
 }
