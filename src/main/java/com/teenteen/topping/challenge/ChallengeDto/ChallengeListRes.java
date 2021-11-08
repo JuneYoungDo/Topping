@@ -9,4 +9,5 @@ import lombok.Setter;
 public class ChallengeListRes {
     private Long challengeId;
     private String challengeName;
+    private String thumbnailUrl;
 }

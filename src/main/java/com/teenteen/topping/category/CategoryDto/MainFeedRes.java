@@ -10,6 +10,6 @@ import java.util.List;
 
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class MainFeedRes {
-    private List<MainCategoryRes> mainCategoryResList;
-    private List<ChallengeListRes> challengeListResList;
+    private List<MainCategoryRes> mainFeedCategory;
+    private List<ChallengeListRes> mainFeedChallenge;
 }
