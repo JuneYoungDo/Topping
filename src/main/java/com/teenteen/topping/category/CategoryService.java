@@ -5,10 +5,13 @@ import com.teenteen.topping.category.CategoryDto.MainCategoryRes;
 import com.teenteen.topping.category.CategoryDto.MainFeedRes;
 import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.challenge.ChallengeDto.ChallengeListRes;
+import com.teenteen.topping.challenge.ChallengeRepository;
 import com.teenteen.topping.challenge.VO.Challenge;
+import com.teenteen.topping.config.BaseException;
+import com.teenteen.topping.config.BaseResponseStatus;
 import com.teenteen.topping.utils.Secret;
 import com.teenteen.topping.video.VO.Video;
-import com.teenteen.topping.video.VideoDto.VideoListByCategoryRes;
+import com.teenteen.topping.video.VideoDto.VideoListByChooseRes;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -19,27 +22,38 @@ import java.util.*;
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final ChallengeRepository challengeRepository;
 
     public List<CategoryListRes> getCategoryList() {
         return categoryRepository.findByDeleted(false).orElse(null);
     }
+    public boolean isValidCategoryId(Long categoryId) {
+        if(categoryRepository.existsByCategoryId(categoryId) == false)
+            return false;
+        Category category = categoryRepository.getById(categoryId);
+        if(category.isDeleted() == true)
+            return false;
+        return true;
+    }
 
     // 카테고리 번호를 이용하여 관련된 동영상 랜덤하게 가져옴
-    public List<VideoListByCategoryRes> getRandomVideoByCategoryId(Long categoryId) {
+    public List<VideoListByChooseRes> getRandomVideoByCategoryId(Long categoryId) throws BaseException {
+        if(isValidCategoryId(categoryId) == false)
+            throw new BaseException(BaseResponseStatus.INVALID_CATEGORY);
         List<Video> videoList = categoryRepository
                 .getVideoByCategory(categoryRepository.getById(categoryId),
                         PageRequest.of(0, 50))  // 50개 까지만
                 .orElse(null);
-        List<VideoListByCategoryRes> videoListByCategoryRes = new ArrayList();
+        List<VideoListByChooseRes> videoListByChooseRes = new ArrayList();
         for (int i = 0; i < videoList.size(); i++) {
             Video video = videoList.get(i);
-            videoListByCategoryRes.add(new VideoListByCategoryRes(
-                    Secret.CLOUD_FRONT_URL + "/" + video.getUrl(),
+            videoListByChooseRes.add(new VideoListByChooseRes(
+                    video.getUrl(),
                     video.getUser().getUserId(),
                     video.getUser().getNickname()
             ));
         }
-        return videoListByCategoryRes;
+        return videoListByChooseRes;
     }
 
     public MainFeedRes mainFeedCategory(List<Long> picks) {

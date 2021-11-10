@@ -15,6 +15,7 @@ import java.util.Optional;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, Long> {
     Optional<List<CategoryListRes>> findByDeleted(boolean b);
+    boolean existsByCategoryId(Long categoryId);
 
     @Query(value = "select distinct v from Video v where v.challenge.category = :category " +
             "and v.challenge.deleted = false and v.deleted = false order by FUNCTION('RAND')")

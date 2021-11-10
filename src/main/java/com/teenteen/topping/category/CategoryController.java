@@ -41,8 +41,13 @@ public class CategoryController {
      */
     @GetMapping("/category/{categoryId}")
     public ResponseEntity getVideoListOfCategoryId(@PathVariable Long categoryId) {
-        return new ResponseEntity(categoryService.getRandomVideoByCategoryId(categoryId)
-                , HttpStatus.valueOf(200));
+        try {
+            return new ResponseEntity(categoryService.getRandomVideoByCategoryId(categoryId)
+                    , HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
     }
 
     /**
@@ -54,7 +59,7 @@ public class CategoryController {
         try {
             // 추후 예정
             if (jwtService.getJwt() == null || jwtService.getJwt() == "") {
-                return new ResponseEntity(200,HttpStatus.valueOf(200));
+                return new ResponseEntity(200, HttpStatus.valueOf(200));
             } else {
                 Long userId = jwtService.getUserId();
                 User user = userRepository.getById(userId);

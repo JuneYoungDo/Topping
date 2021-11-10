@@ -21,7 +21,6 @@ import java.io.IOException;
 public class VideoController {
 
     private final VideoService videoService;
-    private final S3Service s3Service;
     private final JwtService jwtService;
 
     @PostMapping("/upload")

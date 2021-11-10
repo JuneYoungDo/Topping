@@ -2,6 +2,7 @@ package com.teenteen.topping.user;
 
 import com.teenteen.topping.category.CategoryDto.MainCategoryReq;
 import com.teenteen.topping.category.CategoryService;
+import com.teenteen.topping.challenge.ChallengeDto.SearchChallengeReq;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponse;
 import com.teenteen.topping.config.BaseResponseStatus;
@@ -9,7 +10,6 @@ import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
 import com.teenteen.topping.utils.JwtService;
 import com.teenteen.topping.utils.S3Service;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.jcodec.api.JCodecException;
 import org.springframework.http.HttpStatus;
@@ -135,6 +135,16 @@ public class UserController {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
         }
+    }
+
+    /**
+     * Topping(Challenge) 검색하기
+     * [POST] /user/challenge
+     */
+    @PostMapping("/user/challenge")
+    public ResponseEntity SearchChallenge(@RequestBody SearchChallengeReq searchWord) {
+        return new ResponseEntity(userService.searchChallengeWithKeyWord(searchWord.getSearchWord()),
+                HttpStatus.valueOf(200));
     }
 
     @GetMapping("/test")

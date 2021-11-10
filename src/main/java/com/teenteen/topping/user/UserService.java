@@ -3,6 +3,8 @@ package com.teenteen.topping.user;
 import com.teenteen.topping.category.CategoryDto.CategoryListRes;
 import com.teenteen.topping.category.CategoryRepository;
 import com.teenteen.topping.category.VO.Category;
+import com.teenteen.topping.challenge.ChallengeDto.SearchChallengeRes;
+import com.teenteen.topping.challenge.ChallengeRepository;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.oauth.OauthService.AppleService2;
 import com.teenteen.topping.oauth.OauthService.KakaoService;
@@ -29,6 +31,7 @@ import static com.teenteen.topping.config.BaseResponseStatus.*;
 public class UserService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final ChallengeRepository challengeRepository;
     private final JwtService jwtService;
     private final KakaoService kakaoService;
     private final AppleService2 appleService2;
@@ -42,7 +45,7 @@ public class UserService {
         User user = User.builder()
                 .email(email)
                 .birth(null)
-                .nickname(RandomStringUtils.random(10,true,true))
+                .nickname(RandomStringUtils.random(10, true, true))
                 .level(0)
                 .refreshToken("")
                 .deleted(false)
@@ -118,14 +121,14 @@ public class UserService {
         List<CategoryListRes> categories = categoryRepository.
                 findByDeleted(false).orElse(null);
 
-        Map<Long,Boolean> categoryMap = new HashMap();
-        for(int i=0;i<user.getCategories().size();i++) {
-            categoryMap.put(user.getCategories().get(i).getCategoryId(),true);
+        Map<Long, Boolean> categoryMap = new HashMap();
+        for (int i = 0; i < user.getCategories().size(); i++) {
+            categoryMap.put(user.getCategories().get(i).getCategoryId(), true);
         }
         boolean isPicked;
-        for(int i=0;i<categories.size();i++) {
+        for (int i = 0; i < categories.size(); i++) {
             isPicked = false;
-            if(categoryMap.containsKey(categories.get(i).getCategoryId())) isPicked = true;
+            if (categoryMap.containsKey(categories.get(i).getCategoryId())) isPicked = true;
             userCategoryList.add(new GetUserCategoryListRes(
                     categories.get(i).getCategoryId(),
                     isPicked
@@ -142,6 +145,10 @@ public class UserService {
             categories.add(categoryRepository.getById(picks.get(i)));
         }
         user.setCategories(categories);
+    }
+
+    public List<SearchChallengeRes> searchChallengeWithKeyWord(String searchWord) {
+        return challengeRepository.searchChallenge(searchWord).orElse(null);
     }
 
 }
