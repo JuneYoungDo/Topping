@@ -14,7 +14,7 @@ import java.util.Date;
 public class JwtService {
     public String createJwt(Long userId) {
         Date now = new Date();
-        Long expiredTime = 1000 * 60L * 60L * 24L; // 유효기간 24시간
+        Long expiredTime = 7 * 1000 * 60L * 60L * 24L; // 유효기간 24시간 (테스트용으로 우선 7일)
 
         Date nowExpiredTime = new Date();       // 유효기간 끝나는 시각
         nowExpiredTime.setTime(nowExpiredTime.getTime() + expiredTime);
