@@ -1,12 +1,9 @@
 package com.teenteen.topping.user;
 
-import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.user.VO.User;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository

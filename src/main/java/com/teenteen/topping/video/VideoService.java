@@ -41,10 +41,10 @@ public class VideoService {
             throw new BaseException(BaseResponseStatus.INVALID_CHALLENGE);
         User user = userRepository.getById(userId);
         Challenge challenge = challengeRepository.getById(challengeId);
-        List<String> urlList = s3Service.uploadVideoWithThumbnail(file);
+        String fileName = s3Service.upload(file);
         Video video = Video.builder()
-                .url(Secret.CLOUD_FRONT_URL + urlList.get(0))
-                .thumbnail(Secret.CLOUD_FRONT_URL + urlList.get(1))
+                .url(Secret.CLOUD_FRONT_URL + fileName + "/Default/HLS/" + fileName + "_540.m3u8")
+                .thumbnail(Secret.CLOUD_FRONT_URL + fileName + "/Default/Thumbnails/" + fileName + ".0000000.jpg")
                 .deleted(false)
                 .createdAt(LocalDateTime.now())
                 .challenge(challenge)

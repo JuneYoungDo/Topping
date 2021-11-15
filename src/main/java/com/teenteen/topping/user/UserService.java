@@ -115,7 +115,7 @@ public class UserService {
         }
     }
 
-    public List<GetUserCategoryListRes> getCategoryListWithLogin(Long userId) {
+    public GetUserCategoryRes getCategoryListWithLogin(Long userId) {
         List<GetUserCategoryListRes> userCategoryList = new ArrayList();
         User user = userRepository.getById(userId);
         List<CategoryListRes> categories = categoryRepository.
@@ -134,7 +134,7 @@ public class UserService {
                     isPicked
             ));
         }
-        return userCategoryList;
+        return new GetUserCategoryRes(userCategoryList);
     }
 
     @Transactional

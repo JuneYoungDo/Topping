@@ -1,19 +1,17 @@
 package com.teenteen.topping.category;
 
-import com.teenteen.topping.category.CategoryDto.MainCategoryReq;
-import com.teenteen.topping.category.VO.Category;
-import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponse;
-import com.teenteen.topping.config.BaseResponseStatus;
 import com.teenteen.topping.user.UserRepository;
 import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.JwtService;
-import com.teenteen.topping.video.VideoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;

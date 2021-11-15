@@ -46,12 +46,12 @@ public class S3Service {
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion(region)
                 .build();
-        String fileName = System.currentTimeMillis() + file.getOriginalFilename();
+        String fileName = System.currentTimeMillis() + "a";
 
         ObjectMetadata metadata = new ObjectMetadata();
         byte[] bytes = IOUtils.toByteArray(file.getInputStream());
         metadata.setContentLength(bytes.length);
-        s3Client.putObject(new PutObjectRequest(bucket, fileName, file.getInputStream(), metadata)
+        s3Client.putObject(new PutObjectRequest(bucket + "/input", fileName, file.getInputStream(), metadata)
                 .withCannedAcl(CannedAccessControlList.PublicRead)
         );
 
@@ -70,7 +70,7 @@ public class S3Service {
         ObjectMetadata metadata = new ObjectMetadata();
         byte[] bytes = IOUtils.toByteArray(file.getInputStream());
         metadata.setContentLength(bytes.length);
-        s3Client.putObject(new PutObjectRequest(bucket, fileName, file.getInputStream(), metadata)
+        s3Client.putObject(new PutObjectRequest(bucket + "/input", fileName, file.getInputStream(), metadata)
                 .withCannedAcl(CannedAccessControlList.PublicRead)
         );
         //--------썸네일 업로드----------
