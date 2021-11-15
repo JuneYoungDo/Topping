@@ -1,5 +1,6 @@
 package com.teenteen.topping.user;
 
+import com.teenteen.topping.category.CategoryDto.CategoryRes;
 import com.teenteen.topping.category.CategoryDto.MainCategoryReq;
 import com.teenteen.topping.category.CategoryService;
 import com.teenteen.topping.challenge.ChallengeDto.SearchChallengeReq;
@@ -151,7 +152,7 @@ public class UserController {
     public ResponseEntity test(@RequestPart(value = "file", required = true)
                                        MultipartFile multipartFile) throws IOException, JCodecException {
         //return new ResponseEntity(s3Service.upload(multipartFile), HttpStatus.valueOf(200));
-        return new ResponseEntity(s3Service.uploadVideoWithThumbnail(multipartFile),
+        return new ResponseEntity(s3Service.upload(multipartFile),
                 HttpStatus.valueOf(200));
     }
 

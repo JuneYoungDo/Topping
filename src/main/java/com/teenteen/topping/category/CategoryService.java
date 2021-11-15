@@ -1,15 +1,14 @@
 package com.teenteen.topping.category;
 
 import com.teenteen.topping.category.CategoryDto.CategoryListRes;
+import com.teenteen.topping.category.CategoryDto.CategoryRes;
 import com.teenteen.topping.category.CategoryDto.MainCategoryRes;
 import com.teenteen.topping.category.CategoryDto.MainFeedRes;
 import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.challenge.ChallengeDto.ChallengeListRes;
-import com.teenteen.topping.challenge.ChallengeRepository;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponseStatus;
-import com.teenteen.topping.utils.Secret;
 import com.teenteen.topping.video.VO.Video;
 import com.teenteen.topping.video.VideoDto.VideoListByChooseRes;
 import lombok.RequiredArgsConstructor;
@@ -22,10 +21,9 @@ import java.util.*;
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
-    private final ChallengeRepository challengeRepository;
 
-    public List<CategoryListRes> getCategoryList() {
-        return categoryRepository.findByDeleted(false).orElse(null);
+    public CategoryRes getCategoryList() {
+        return new CategoryRes(categoryRepository.findByDeleted(false).orElse(null));
     }
     public boolean isValidCategoryId(Long categoryId) {
         if(categoryRepository.existsByCategoryId(categoryId) == false)
