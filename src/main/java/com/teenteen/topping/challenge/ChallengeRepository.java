@@ -29,5 +29,4 @@ public interface ChallengeRepository extends JpaRepository<Challenge, Long> {
     Optional<KeyWord> searchKeyWord(String searchWord);
 
 
-
 }

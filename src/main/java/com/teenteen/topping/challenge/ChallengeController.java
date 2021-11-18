@@ -29,4 +29,19 @@ public class ChallengeController {
         }
     }
 
+    /**
+     * 토핑 선택시 토핑 정보 가져오기
+     * [GET] /challenge/{challengeId}
+     */
+    @GetMapping("/challenge/{challengeId}")
+    public ResponseEntity getChallengeByChallengeId(@PathVariable Long challengeId) {
+        try {
+            return new ResponseEntity(challengeService.getChallengeByChallengeId(challengeId),
+                    HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
 }

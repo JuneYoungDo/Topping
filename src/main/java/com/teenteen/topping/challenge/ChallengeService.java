@@ -1,5 +1,6 @@
 package com.teenteen.topping.challenge;
 
+import com.teenteen.topping.challenge.ChallengeDto.ChallengeInfo;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponseStatus;
@@ -43,6 +44,21 @@ public class ChallengeService {
             ));
         }
         return videoListByChooseRes;
+    }
+
+    public ChallengeInfo getChallengeByChallengeId(Long challengeId) throws BaseException {
+        if(isValidChallengeId(challengeId) == false)
+            throw new BaseException(BaseResponseStatus.INVALID_CHALLENGE);
+        Challenge challenge = challengeRepository.getById(challengeId);
+        List<String> tags = new ArrayList();
+        for(int i=0;i<challenge.getKeyWords().size();i++)
+            tags.add(challenge.getKeyWords().get(i).getWord());
+        return new ChallengeInfo(challenge.getName(),
+                challenge.getDescription(),
+                tags,
+                null,
+                challenge.getCategory().getCategoryId()
+                );
     }
 
 }
