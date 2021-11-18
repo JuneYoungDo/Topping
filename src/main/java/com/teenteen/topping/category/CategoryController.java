@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
@@ -37,7 +38,7 @@ public class CategoryController {
      * 카테고리 선택시 동영상 가져오기(Random)
      * [GET] /category/{categoryId}
      */
-    @GetMapping("/category/{categoryId}")
+    @GetMapping("/videos/category/{categoryId}")
     public ResponseEntity getVideoListOfCategoryId(@PathVariable Long categoryId) {
         try {
             return new ResponseEntity(categoryService.getRandomVideoByCategoryId(categoryId)
@@ -57,7 +58,8 @@ public class CategoryController {
         try {
             // 추후 예정
             if (jwtService.getJwt() == null || jwtService.getJwt() == "") {
-                return new ResponseEntity(200, HttpStatus.valueOf(200));
+                List<Long> picks = new ArrayList(Arrays.asList(2L,3L,5L,7L,4L,11L));
+                return new ResponseEntity(categoryService.mainFeedCategory(picks), HttpStatus.valueOf(200));
             } else {
                 Long userId = jwtService.getUserId();
                 User user = userRepository.getById(userId);
@@ -67,6 +69,22 @@ public class CategoryController {
                 return new ResponseEntity(categoryService.mainFeedCategory(picks),
                         HttpStatus.valueOf(200));
             }
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 카테고리 선택시 해당 토핑들 가져오기
+     * [GET] /challenges/category/{categoryId}/{sortMethod}
+     * {sortMethod} : 2. 인기순 그 외 시간 순
+     */
+    @GetMapping("/challenges/category/{categoryId}/{sortMethod}")
+    public ResponseEntity getChallenges(@PathVariable Long categoryId, @PathVariable Long sortMethod) {
+        try {
+            return new ResponseEntity(categoryService.getChallengesByCategory(categoryId,sortMethod),
+                    HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));

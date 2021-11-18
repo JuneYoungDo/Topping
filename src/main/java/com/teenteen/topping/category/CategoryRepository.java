@@ -2,6 +2,7 @@ package com.teenteen.topping.category;
 
 import com.teenteen.topping.category.CategoryDto.CategoryListRes;
 import com.teenteen.topping.category.VO.Category;
+import com.teenteen.topping.challenge.ChallengeDto.SimpleSearchRes;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.video.VO.Video;
 import org.springframework.data.domain.Pageable;
@@ -27,4 +28,12 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query(value = "select v from Video v where v.challenge = :challenge order by v.createdAt DESC")
     Optional<List<Video>> getRecentVideoByChallenge(Challenge challenge, Pageable limit);
+
+    @Query(value = "select c from Challenge c " +
+            "where c.deleted = false and c.category.categoryId = :categoryId order by c.createdAt DESC")
+    Optional<List<SimpleSearchRes>> getChallengesByCategorySortWithTime(Long categoryId);
+
+    @Query(value = "select c from Challenge c " +
+            "where c.deleted = false and c.category.categoryId = :categoryId order by c.viewCount DESC")
+    Optional<List<SimpleSearchRes>> getChallengesByCategorySortWithViewCount(Long categoryId);
 }
