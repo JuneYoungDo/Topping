@@ -8,6 +8,10 @@ group = 'com.teenteen'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = '11'
 
+bootJar {
+    mainClassName = 'com.teenteen.topping.ToppingApplication'
+}
+
 configurations {
     compileOnly {
         extendsFrom annotationProcessor

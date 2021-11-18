@@ -1,11 +1,11 @@
 package com.teenteen.topping.category;
 
 import com.teenteen.topping.category.CategoryDto.CategoryListRes;
-import com.teenteen.topping.category.CategoryDto.CategoryRes;
 import com.teenteen.topping.category.CategoryDto.MainCategoryRes;
 import com.teenteen.topping.category.CategoryDto.MainFeedRes;
 import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.challenge.ChallengeDto.ChallengeListRes;
+import com.teenteen.topping.challenge.ChallengeDto.SimpleSearchRes;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponseStatus;
@@ -22,21 +22,22 @@ import java.util.*;
 public class CategoryService {
     private final CategoryRepository categoryRepository;
 
-    public CategoryRes getCategoryList() {
-        return new CategoryRes(categoryRepository.findByDeleted(false).orElse(null));
+    public List<CategoryListRes> getCategoryList() {
+        return categoryRepository.findByDeleted(false).orElse(null);
     }
+
     public boolean isValidCategoryId(Long categoryId) {
-        if(categoryRepository.existsByCategoryId(categoryId) == false)
+        if (categoryRepository.existsByCategoryId(categoryId) == false)
             return false;
         Category category = categoryRepository.getById(categoryId);
-        if(category.isDeleted() == true)
+        if (category.isDeleted() == true)
             return false;
         return true;
     }
 
     // 카테고리 번호를 이용하여 관련된 동영상 랜덤하게 가져옴
     public List<VideoListByChooseRes> getRandomVideoByCategoryId(Long categoryId) throws BaseException {
-        if(isValidCategoryId(categoryId) == false)
+        if (isValidCategoryId(categoryId) == false)
             throw new BaseException(BaseResponseStatus.INVALID_CATEGORY);
         List<Video> videoList = categoryRepository
                 .getVideoByCategory(categoryRepository.getById(categoryId),
@@ -47,8 +48,11 @@ public class CategoryService {
             Video video = videoList.get(i);
             videoListByChooseRes.add(new VideoListByChooseRes(
                     video.getUrl(),
+                    video.getChallenge().getChallengeId(),
+                    video.getChallenge().getName(),
                     video.getUser().getUserId(),
-                    video.getUser().getNickname()
+                    video.getUser().getNickname(),
+                    video.getUser().getProfileUrl()
             ));
         }
         return videoListByChooseRes;
@@ -96,7 +100,12 @@ public class CategoryService {
         }
         List<Challenge> challengeList = categoryRepository.getChallengeByCategory(categoryList)
                 .orElse(null);
-        for (int i = 0; i < challengeList.size(); i++) {
+        int maxList;
+        if (challengeList.size() > 50)
+            maxList = 50;
+        else
+            maxList = challengeList.size();
+        for (int i = 0; i < maxList; i++) {
             Challenge challenge = challengeList.get(i);
             List<Video> videos = categoryRepository
                     .getRecentVideoByChallenge(challenge, PageRequest.of(0, 1))
@@ -113,5 +122,13 @@ public class CategoryService {
             ));
         }
         return challengeListRes;
+    }
+
+    public List<SimpleSearchRes> getChallengesByCategory(Long categoryId, Long sortMethod) throws BaseException {
+        if (isValidCategoryId(categoryId) == false) throw new BaseException(BaseResponseStatus.INVALID_CATEGORY);
+        if (sortMethod == 2)
+            return categoryRepository.getChallengesByCategorySortWithViewCount(categoryId).orElse(null);
+        else
+            return categoryRepository.getChallengesByCategorySortWithTime(categoryId).orElse(null);
     }
 }

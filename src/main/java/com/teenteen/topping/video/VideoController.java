@@ -23,7 +23,7 @@ public class VideoController {
     private final VideoService videoService;
     private final JwtService jwtService;
 
-    @PostMapping("/upload")
+    @PostMapping("/upload/video")
     public ResponseEntity uploadVideo(@RequestPart(value = "file", required = true) MultipartFile multipartFile,
                                @RequestParam(value = "challengeId") Long challengeId) throws IOException {
         try {

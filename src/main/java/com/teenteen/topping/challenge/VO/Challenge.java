@@ -1,6 +1,7 @@
 package com.teenteen.topping.challenge.VO;
 
 import com.teenteen.topping.category.VO.Category;
+import com.teenteen.topping.challenge.ChallengeDto.SearchChallengeRes;
 import com.teenteen.topping.video.VO.Video;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Entity
@@ -20,8 +22,7 @@ public class Challenge {
     private Long challengeId;
     private String name;
     private String description;
-    private int takeTime;
-    private char mode;
+    private Long viewCount;
     private boolean deleted;
     private LocalDateTime createdAt;
 
@@ -31,4 +32,8 @@ public class Challenge {
 
     @OneToMany(mappedBy = "challenge")
     private List<Video> videos;
+
+    @ManyToMany(mappedBy = "challenges")
+    private List<KeyWord> keyWords;
+
 }

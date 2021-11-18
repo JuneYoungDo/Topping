@@ -5,7 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-public interface SearchChallengeRes {
-    Long getChallengeId();
-    String getName();
+@Getter @Setter @AllArgsConstructor @NoArgsConstructor
+public class SearchChallengeRes{
+    private Long challengeId;
+    private String challengeName;
+    private Long categoryId;
+
 }

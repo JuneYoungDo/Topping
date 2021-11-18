@@ -8,6 +8,9 @@ import lombok.Setter;
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class VideoListByChooseRes {
     private String url;
+    private Long challengeId;
+    private String challengeName;
     private Long userId;
     private String userNickName;
+    private String profileUrl;
 }

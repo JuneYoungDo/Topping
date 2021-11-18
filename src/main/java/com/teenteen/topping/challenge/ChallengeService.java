@@ -1,8 +1,5 @@
 package com.teenteen.topping.challenge;
 
-import com.teenteen.topping.category.CategoryDto.MainCategoryRes;
-import com.teenteen.topping.category.CategoryRepository;
-import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponseStatus;
@@ -12,7 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -37,8 +35,11 @@ public class ChallengeService {
             Video video = videoList.get(i);
             videoListByChooseRes.add(new VideoListByChooseRes(
                     video.getUrl(),
+                    video.getChallenge().getChallengeId(),
+                    video.getChallenge().getName(),
                     video.getUser().getUserId(),
-                    video.getUser().getNickname()
+                    video.getUser().getNickname(),
+                    video.getUser().getProfileUrl()
             ));
         }
         return videoListByChooseRes;

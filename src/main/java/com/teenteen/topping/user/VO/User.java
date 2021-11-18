@@ -20,7 +20,7 @@ public class User {
     private String email;
     private String birth;
     private String nickname;
-    private int level;
+    private String profileUrl;
     private String refreshToken;
     private boolean deleted;
     private LocalDateTime createdAt;

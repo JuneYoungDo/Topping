@@ -5,6 +5,8 @@ import com.teenteen.topping.category.CategoryRepository;
 import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.challenge.ChallengeDto.SearchChallengeRes;
 import com.teenteen.topping.challenge.ChallengeRepository;
+import com.teenteen.topping.challenge.VO.Challenge;
+import com.teenteen.topping.challenge.VO.KeyWord;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.oauth.OauthService.AppleService2;
 import com.teenteen.topping.oauth.OauthService.KakaoService;
@@ -19,10 +21,7 @@ import org.springframework.stereotype.Service;
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.teenteen.topping.config.BaseResponseStatus.*;
 
@@ -46,7 +45,7 @@ public class UserService {
                 .email(email)
                 .birth(null)
                 .nickname(RandomStringUtils.random(10, true, true))
-                .level(0)
+                .profileUrl("")
                 .refreshToken("")
                 .deleted(false)
                 .createdAt(LocalDateTime.now())
@@ -115,7 +114,7 @@ public class UserService {
         }
     }
 
-    public GetUserCategoryRes getCategoryListWithLogin(Long userId) {
+    public List<GetUserCategoryListRes> getCategoryListWithLogin(Long userId) {
         List<GetUserCategoryListRes> userCategoryList = new ArrayList();
         User user = userRepository.getById(userId);
         List<CategoryListRes> categories = categoryRepository.
@@ -134,7 +133,7 @@ public class UserService {
                     isPicked
             ));
         }
-        return new GetUserCategoryRes(userCategoryList);
+        return userCategoryList;
     }
 
     @Transactional
@@ -147,8 +146,41 @@ public class UserService {
         user.setCategories(categories);
     }
 
+
+    //챌린지 검색하기
     public List<SearchChallengeRes> searchChallengeWithKeyWord(String searchWord) {
-        return challengeRepository.searchChallenge(searchWord).orElse(null);
+        // 리턴
+        List<SearchChallengeRes> searchChallengeRes = new ArrayList();
+        if (searchWord == "" || searchWord == null) return searchChallengeRes;
+
+        // 챌린지 목록
+        List<Challenge> challengeList = new ArrayList();
+        Map<Challenge, Boolean> challengeMap = new HashMap();
+        // 챌린지 이름으로 검색
+        List<Challenge> challenges = challengeRepository.searchChallenge(searchWord).orElse(null);
+        for (int i = 0; i < challenges.size(); i++) {
+            challengeMap.put(challenges.get(i), true);
+            challengeList.add(challenges.get(i));
+        }
+        // 키워드 이름으로 검색
+        KeyWord keyWord = challengeRepository.searchKeyWord(searchWord).orElse(null);
+        // 키워드 중 검색어가 있다면
+        if (keyWord != null) {
+            List<Challenge> keyWordChallenges = keyWord.getChallenges();
+            for (int i = 0; i < keyWordChallenges.size(); i++) {
+                if (challengeMap.containsKey(keyWordChallenges.get(i))) continue;
+                else {
+                    challengeList.add(keyWordChallenges.get(i));
+                }
+            }
+        }
+        for (int i=0;i<challengeList.size();i++) {
+            searchChallengeRes.add(new SearchChallengeRes(challengeList.get(i).getChallengeId(),
+                    challengeList.get(i).getName(),
+                    challengeList.get(i).getCategory().getCategoryId()));
+        }
+        return searchChallengeRes;
     }
+
 
 }

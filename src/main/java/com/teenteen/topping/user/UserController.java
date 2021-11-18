@@ -1,6 +1,5 @@
 package com.teenteen.topping.user;
 
-import com.teenteen.topping.category.CategoryDto.CategoryRes;
 import com.teenteen.topping.category.CategoryDto.MainCategoryReq;
 import com.teenteen.topping.category.CategoryService;
 import com.teenteen.topping.challenge.ChallengeDto.SearchChallengeReq;
