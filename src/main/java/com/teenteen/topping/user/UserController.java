@@ -1,5 +1,6 @@
 package com.teenteen.topping.user;
 
+import com.google.api.Http;
 import com.teenteen.topping.category.CategoryDto.MainCategoryReq;
 import com.teenteen.topping.category.CategoryService;
 import com.teenteen.topping.challenge.ChallengeDto.SearchChallengeReq;
@@ -143,20 +144,28 @@ public class UserController {
     }
 
     /**
-     * Topping(Challenge) 검색하기
+     * 토핑(챌린지) 저장하기
      * [POST] /user/challenge
      */
     @PostMapping("/user/challenge")
-    public ResponseEntity SearchChallenge(@RequestBody SearchChallengeReq searchWord) {
-        return new ResponseEntity(userService.searchChallengeWithKeyWord(searchWord.getSearchWord()),
-                HttpStatus.valueOf(200));
+    public ResponseEntity saveUserChallenge(@RequestBody SaveUserChallengeReq saveUserChallengeReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            userService.saveUserChallenge(userId, saveUserChallengeReq.getChallengeId());
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
     }
 
-    @GetMapping("/test")
-    public ResponseEntity test(@RequestPart(value = "file", required = true)
-                                       MultipartFile multipartFile) throws IOException, JCodecException {
-        //return new ResponseEntity(s3Service.upload(multipartFile), HttpStatus.valueOf(200));
-        return new ResponseEntity(s3Service.upload(multipartFile),
+    /**
+     * Topping(Challenge) 검색하기
+     * [POST] /user/challenge
+     */
+    @PostMapping("/search/challenge")
+    public ResponseEntity SearchChallenge(@RequestBody SearchChallengeReq searchWord) {
+        return new ResponseEntity(userService.searchChallengeWithKeyWord(searchWord.getSearchWord()),
                 HttpStatus.valueOf(200));
     }
 

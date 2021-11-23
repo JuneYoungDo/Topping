@@ -8,7 +8,7 @@ import com.teenteen.topping.challenge.ChallengeRepository;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.challenge.VO.KeyWord;
 import com.teenteen.topping.config.BaseException;
-import com.teenteen.topping.oauth.OauthService.AppleService2;
+import com.teenteen.topping.oauth.OauthService.AppleService;
 import com.teenteen.topping.oauth.OauthService.KakaoService;
 import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
@@ -33,7 +33,7 @@ public class UserService {
     private final ChallengeRepository challengeRepository;
     private final JwtService jwtService;
     private final KakaoService kakaoService;
-    private final AppleService2 appleService2;
+    private final AppleService appleService;
 
     @Transactional
     public void save(User user) {
@@ -82,7 +82,7 @@ public class UserService {
         String email = "";
         if (socialLoginType.equals(SocialLoginType.KAKAO)) email = kakaoService.getKakaoUserInfo(idToken);
         else if (socialLoginType.equals(SocialLoginType.APPLE)) {
-            appleService2.getClaimsBy("123");
+            email = appleService.userEmailFromApple(idToken);
         }
         String tmp = isUsedEmail(email);
         if (tmp == "using") { // 로그인
@@ -144,6 +144,13 @@ public class UserService {
             categories.add(categoryRepository.getById(picks.get(i)));
         }
         user.setCategories(categories);
+    }
+
+    @Transactional
+    public void saveUserChallenge(Long userId, Long challengeId) {
+        User user = userRepository.getById(userId);
+        Challenge challenge = challengeRepository.getById(challengeId);
+        user.getChallenges().add(challenge);
     }
 
 

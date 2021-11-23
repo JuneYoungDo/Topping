@@ -54,8 +54,16 @@ public class S3Service {
         s3Client.putObject(new PutObjectRequest(bucket + "/input", fileName, file.getInputStream(), metadata)
                 .withCannedAcl(CannedAccessControlList.PublicRead)
         );
-
         return fileName;
+    }
+
+    public void deleteFile(String source) {
+        AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+        s3Client = AmazonS3ClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withRegion(region)
+                .build();
+        s3Client.deleteObject(bucket + "/input", source);
     }
 
     public List<String> uploadVideoWithThumbnail(MultipartFile file) throws IOException, JCodecException {
