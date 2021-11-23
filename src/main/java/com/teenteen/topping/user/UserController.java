@@ -12,6 +12,8 @@ import com.teenteen.topping.utils.JwtService;
 import com.teenteen.topping.utils.S3Service;
 import lombok.RequiredArgsConstructor;
 import org.jcodec.api.JCodecException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -20,10 +22,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
 public class UserController {
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final UserService userService;
     private final JwtService jwtService;
     private final S3Service s3Service;
@@ -103,6 +107,7 @@ public class UserController {
     @GetMapping("/user/category")
     public ResponseEntity getCategory() {
         try {
+            System.out.println(LocalDateTime.now());
             if (jwtService.getJwt() == "" || jwtService.getJwt() == null) {
                 return new ResponseEntity(categoryService.getCategoryList()
                         , HttpStatus.valueOf(200));

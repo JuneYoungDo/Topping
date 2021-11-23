@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,18 +20,19 @@ public class ChallengeService {
     private final ChallengeRepository challengeRepository;
 
     public boolean isValidChallengeId(Long challengeId) {
-        if(challengeRepository.existsByChallengeId(challengeId) == false)
+        if (challengeRepository.existsByChallengeId(challengeId) == false)
             return false;
         Challenge challenge = challengeRepository.getById(challengeId);
-        if(challenge.isDeleted() == true)
+        if (challenge.isDeleted() == true)
             return false;
         return true;
     }
+
     public List<VideoListByChooseRes> getVideoListByChallengeId(Long challengeId) throws BaseException {
-        if(isValidChallengeId(challengeId) == false)
+        if (isValidChallengeId(challengeId) == false)
             throw new BaseException(BaseResponseStatus.INVALID_CHALLENGE);
         List<Video> videoList = challengeRepository
-                .getVideoByChallenge(challengeId, PageRequest.of(0,50)).orElse(null);
+                .getVideoByChallenge(challengeId, PageRequest.of(0, 50)).orElse(null);
         List<VideoListByChooseRes> videoListByChooseRes = new ArrayList();
         for (int i = 0; i < videoList.size(); i++) {
             Video video = videoList.get(i);
@@ -46,19 +48,21 @@ public class ChallengeService {
         return videoListByChooseRes;
     }
 
+    @Transactional
     public ChallengeInfo getChallengeByChallengeId(Long challengeId) throws BaseException {
-        if(isValidChallengeId(challengeId) == false)
+        if (isValidChallengeId(challengeId) == false)
             throw new BaseException(BaseResponseStatus.INVALID_CHALLENGE);
         Challenge challenge = challengeRepository.getById(challengeId);
+        challenge.setViewCount(challenge.getViewCount() + 1);
         List<String> tags = new ArrayList();
-        for(int i=0;i<challenge.getKeyWords().size();i++)
+        for (int i = 0; i < challenge.getKeyWords().size(); i++)
             tags.add(challenge.getKeyWords().get(i).getWord());
         return new ChallengeInfo(challenge.getName(),
                 challenge.getDescription(),
                 tags,
                 null,
                 challenge.getCategory().getCategoryId()
-                );
+        );
     }
 
 }

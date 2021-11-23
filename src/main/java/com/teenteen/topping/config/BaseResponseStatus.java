@@ -20,6 +20,7 @@ public enum BaseResponseStatus {
     EMPTY_ID_TOKEN(400,"id토큰이 없습니다.",111),
     FAILED_TO_APPLE_LOGIN(400,"애플 로그인에 실패하였습니다.",112),
     FAILED_TO_FIND_AVAILABLE_RSA(400,"암호키를 찾지 못하였습니다.",113),
+    EMPTY_ACCESS_TOKEN(400,"accessToken이 없습니다.",114),
 
     INVALID_INPUT_NUM(400,"3개 이상 골라주세요.",114),
     INVALID_CHALLENGE(400,"유효하지 않은 토핑 id 입니다.",115),

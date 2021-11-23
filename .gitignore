@@ -24,6 +24,8 @@ application.yml
 Secret.java
 src/main/java/com/teenteen/topping/utils/Secret.java
 Dockerfile
+logs
+firebase
 
 ### IntelliJ IDEA ###
 .idea

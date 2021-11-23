@@ -6,6 +6,8 @@ import com.teenteen.topping.user.UserRepository;
 import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CategoryController {
 
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final CategoryService categoryService;
     private final JwtService jwtService;
     private final UserRepository userRepository;
