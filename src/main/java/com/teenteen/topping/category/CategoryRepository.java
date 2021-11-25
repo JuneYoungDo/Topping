@@ -31,9 +31,9 @@ public interface CategoryRepository extends JpaRepository<Category, Long> {
 
     @Query(value = "select c from Challenge c " +
             "where c.deleted = false and c.category.categoryId = :categoryId order by c.createdAt DESC")
-    Optional<List<SimpleSearchRes>> getChallengesByCategorySortWithTime(Long categoryId);
+    Optional<List<Challenge>> getChallengesByCategorySortWithTime(Long categoryId);
 
     @Query(value = "select c from Challenge c " +
             "where c.deleted = false and c.category.categoryId = :categoryId order by c.viewCount DESC")
-    Optional<List<SimpleSearchRes>> getChallengesByCategorySortWithViewCount(Long categoryId);
+    Optional<List<Challenge>> getChallengesByCategorySortWithViewCount(Long categoryId);
 }

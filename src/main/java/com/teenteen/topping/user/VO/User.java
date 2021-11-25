@@ -1,6 +1,7 @@
 package com.teenteen.topping.user.VO;
 
 import com.teenteen.topping.category.VO.Category;
+import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.video.VO.Video;
 import lombok.*;
 
@@ -10,7 +11,10 @@ import java.util.List;
 
 @Entity
 @Builder
-@Getter @Setter @AllArgsConstructor @NoArgsConstructor
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "user")
 public class User {
     @Id
@@ -33,4 +37,13 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "category_id"))
     private List<Category> categories;
+
+    @ManyToMany
+    @JoinTable(name = "user_challenge",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "challenge_id"))
+    private List<Challenge> challenges;
+
+    @OneToMany(mappedBy = "user")
+    private List<LikeList> likeLists;
 }

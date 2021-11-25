@@ -8,8 +8,8 @@ import lombok.Setter;
 import java.util.List;
 
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
-public class SimpleSearchRes {
+public class UserChallengeRes {
     private Long challengeId;
-    private String name;
+    private String challengeName;
     private List<String> keyWords;
 }

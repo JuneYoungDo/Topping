@@ -1,15 +1,11 @@
-package com.teenteen.topping.challenge.ChallengeDto;
+package com.teenteen.topping.user.UserDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
-
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
-public class SimpleSearchRes {
+public class UserChallengeReq {
     private Long challengeId;
-    private String name;
-    private List<String> keyWords;
 }

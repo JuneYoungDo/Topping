@@ -7,9 +7,10 @@ import lombok.Setter;
 
 import java.util.List;
 
-@Getter @Setter @AllArgsConstructor @NoArgsConstructor
-public class SimpleSearchRes {
-    private Long challengeId;
+@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+public class ChallengeListResWithCategory {
+    private Long categoryId;
     private String name;
-    private List<String> keyWords;
+    private String description;
+    private List<SimpleSearchRes> challengeList;
 }

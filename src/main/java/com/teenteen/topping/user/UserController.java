@@ -1,8 +1,10 @@
 package com.teenteen.topping.user;
 
+import com.google.api.Http;
 import com.teenteen.topping.category.CategoryDto.MainCategoryReq;
 import com.teenteen.topping.category.CategoryService;
 import com.teenteen.topping.challenge.ChallengeDto.SearchChallengeReq;
+import com.teenteen.topping.challenge.ChallengeService;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponse;
 import com.teenteen.topping.config.BaseResponseStatus;
@@ -10,8 +12,10 @@ import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
 import com.teenteen.topping.utils.JwtService;
 import com.teenteen.topping.utils.S3Service;
+import com.teenteen.topping.video.VideoService;
 import lombok.RequiredArgsConstructor;
-import org.jcodec.api.JCodecException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.Errors;
@@ -20,14 +24,17 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @RestController
 @RequiredArgsConstructor
 public class UserController {
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final UserService userService;
     private final JwtService jwtService;
-    private final S3Service s3Service;
+    private final ChallengeService challengeService;
     private final CategoryService categoryService;
+    private final VideoService videoService;
 
     /**
      * 닉네임 확인
@@ -83,6 +90,23 @@ public class UserController {
     }
 
     /**
+     * 프로필 사진 바꾸기
+     * [POST] /user/info/img
+     */
+    @PostMapping("/user/info/img")
+    public ResponseEntity editUserImg(@RequestBody MultipartFile file) throws IOException {
+        try {
+            Long userId = jwtService.getUserId();
+            System.out.println(userId);
+            userService.editProfileImg(userId, file);
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
      * refreshToken을 이용한 accessToken 재발급
      * [POST] /login/refresh
      */
@@ -103,6 +127,7 @@ public class UserController {
     @GetMapping("/user/category")
     public ResponseEntity getCategory() {
         try {
+            System.out.println(LocalDateTime.now());
             if (jwtService.getJwt() == "" || jwtService.getJwt() == null) {
                 return new ResponseEntity(categoryService.getCategoryList()
                         , HttpStatus.valueOf(200));
@@ -138,20 +163,120 @@ public class UserController {
     }
 
     /**
-     * Topping(Challenge) 검색하기
+     * 토핑(챌린지) 저장하기
      * [POST] /user/challenge
      */
     @PostMapping("/user/challenge")
-    public ResponseEntity SearchChallenge(@RequestBody SearchChallengeReq searchWord) {
-        return new ResponseEntity(userService.searchChallengeWithKeyWord(searchWord.getSearchWord()),
-                HttpStatus.valueOf(200));
+    public ResponseEntity saveUserChallenge(@RequestBody UserChallengeReq userChallengeReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            userService.saveUserChallenge(userId, userChallengeReq.getChallengeId());
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
     }
 
-    @GetMapping("/test")
-    public ResponseEntity test(@RequestPart(value = "file", required = true)
-                                       MultipartFile multipartFile) throws IOException, JCodecException {
-        //return new ResponseEntity(s3Service.upload(multipartFile), HttpStatus.valueOf(200));
-        return new ResponseEntity(s3Service.upload(multipartFile),
+    /**
+     * 토핑(챌린지) 삭제하기
+     * [PUT] /user/challenge
+     */
+    @PutMapping("/user/challenge")
+    public ResponseEntity deleteUserChallenge(@RequestBody UserChallengeReq userChallengeReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            userService.deleteUserChallenge(userId, userChallengeReq.getChallengeId());
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 마이페이지 보기
+     * [GET] /user/info
+     */
+    @GetMapping("/user")
+    public ResponseEntity myPage() {
+        try {
+            Long userId = jwtService.getUserId();
+            return new ResponseEntity(userService.getUserProfile(userId), HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 저장한 챌린지 보기
+     * [GET] /user/challenges
+     */
+    @GetMapping("/user/challenges")
+    public ResponseEntity myChallenges() {
+        try {
+            Long userId = jwtService.getUserId();
+            return new ResponseEntity(challengeService.getUserChallengeList(userId), HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 나의 피드 보기
+     * [GET] /user/feeds
+     */
+    @GetMapping("/user/feeds")
+    public ResponseEntity myFeeds() {
+        try {
+            Long userId = jwtService.getUserId();
+            return new ResponseEntity(videoService.getUserFeeds(userId), HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 동영상에 반응하기
+     * [POST] /user/react/{videoId}
+     */
+    @PostMapping("/user/react/{videoId}")
+    public ResponseEntity reactVideo(@PathVariable Long videoId,
+                                     @RequestBody UserReactVideoReq userReactVideoReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            return new ResponseEntity(
+                    userService.reactVideo(userId, videoId, userReactVideoReq.getMode()),
+                    HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+    /**
+     * 동영상 반응 가져오기
+     * [GET] /video/react/{videoId}
+     */
+    @GetMapping("/video/react/{videoId}")
+    public ResponseEntity reactNum(@PathVariable Long videoId) {
+        try{
+        return new ResponseEntity(userService.getReactNum(videoId),HttpStatus.valueOf(200));}
+        catch(BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * Topping(Challenge) 검색하기
+     * [POST] /user/challenge
+     */
+    @PostMapping("/search/challenge")
+    public ResponseEntity SearchChallenge(@RequestBody SearchChallengeReq searchWord) {
+        return new ResponseEntity(userService.searchChallengeWithKeyWord(searchWord.getSearchWord()),
                 HttpStatus.valueOf(200));
     }
 

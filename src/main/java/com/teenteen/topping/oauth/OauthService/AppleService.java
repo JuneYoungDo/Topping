@@ -24,7 +24,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class AppleService {
-    public String userIdFromApple(String idToken) throws BaseException {
+    public String userEmailFromApple(String idToken) throws BaseException {
         /**
          * 1. apple로 부터 공개키 3개 가져옴
          * 2. 내가 클라에서 가져온 token String과 비교해서 써야할 공개키 확인 (kid,alg 값 같은 것)
@@ -77,10 +77,10 @@ public class AppleService {
 
         Claims userInfo = Jwts.parser().setSigningKey(publicKey).parseClaimsJws(idToken).getBody();
         JsonObject userInfoObject = (JsonObject) parser.parse(new Gson().toJson(userInfo));
-        JsonElement appleAlg = userInfoObject.get("sub");
-        String userId = appleAlg.getAsString();
+        JsonElement appleAlg = userInfoObject.get("email");
+        String userEmail = appleAlg.getAsString();
 
-        return userId;
+        return userEmail;
     }
 
     public PublicKey getPublicKey(JsonObject object) throws BaseException {

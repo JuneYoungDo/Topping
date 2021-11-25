@@ -5,6 +5,7 @@ import com.teenteen.topping.category.CategoryDto.MainCategoryRes;
 import com.teenteen.topping.category.CategoryDto.MainFeedRes;
 import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.challenge.ChallengeDto.ChallengeListRes;
+import com.teenteen.topping.challenge.ChallengeDto.ChallengeListResWithCategory;
 import com.teenteen.topping.challenge.ChallengeDto.SimpleSearchRes;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
@@ -124,11 +125,30 @@ public class CategoryService {
         return challengeListRes;
     }
 
-    public List<SimpleSearchRes> getChallengesByCategory(Long categoryId, Long sortMethod) throws BaseException {
+    public List<String> getKeyWordsFromChallenge(Challenge challenge) {
+        List<String> keyWords = new ArrayList<>();
+        for (int i = 0; i < challenge.getKeyWords().size(); i++) {
+            keyWords.add(challenge.getKeyWords().get(i).getWord());
+        }
+        return keyWords;
+    }
+
+    public ChallengeListResWithCategory getChallengesByCategory(Long categoryId, Long sortMethod) throws BaseException {
         if (isValidCategoryId(categoryId) == false) throw new BaseException(BaseResponseStatus.INVALID_CATEGORY);
-        if (sortMethod == 2)
-            return categoryRepository.getChallengesByCategorySortWithViewCount(categoryId).orElse(null);
-        else
-            return categoryRepository.getChallengesByCategorySortWithTime(categoryId).orElse(null);
+        Category category = categoryRepository.getById(categoryId);
+        List<Challenge> challengeList = new ArrayList<>();
+        if (sortMethod == 2) {
+            challengeList = categoryRepository.getChallengesByCategorySortWithViewCount(categoryId).orElse(null);
+        } else {
+            challengeList = categoryRepository.getChallengesByCategorySortWithTime(categoryId).orElse(null);
+        }
+        List<SimpleSearchRes> simpleSearchResList = new ArrayList();
+        for (int i = 0; i < challengeList.size(); i++) {
+            Challenge challenge = challengeList.get(i);
+            simpleSearchResList.add(new SimpleSearchRes(challenge.getChallengeId(),
+                    challenge.getName(), getKeyWordsFromChallenge(challenge)));
+        }
+        return new ChallengeListResWithCategory(categoryId, category.getName(), category.getDescription(),
+                simpleSearchResList);
     }
 }

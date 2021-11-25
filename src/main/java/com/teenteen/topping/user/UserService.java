@@ -8,15 +8,22 @@ import com.teenteen.topping.challenge.ChallengeRepository;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.challenge.VO.KeyWord;
 import com.teenteen.topping.config.BaseException;
-import com.teenteen.topping.oauth.OauthService.AppleService2;
+import com.teenteen.topping.oauth.OauthService.AppleService;
 import com.teenteen.topping.oauth.OauthService.KakaoService;
 import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
+import com.teenteen.topping.user.VO.LikeList;
 import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.JwtService;
+import com.teenteen.topping.utils.S3Service;
+import com.teenteen.topping.utils.Secret;
+import com.teenteen.topping.video.VideoRepository;
+import com.teenteen.topping.video.VideoService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -29,11 +36,15 @@ import static com.teenteen.topping.config.BaseResponseStatus.*;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final LikeListRepository likeListRepository;
     private final CategoryRepository categoryRepository;
     private final ChallengeRepository challengeRepository;
+    private final VideoRepository videoRepository;
     private final JwtService jwtService;
+    private final S3Service s3Service;
     private final KakaoService kakaoService;
-    private final AppleService2 appleService2;
+    private final AppleService appleService;
+    private final VideoService videoService;
 
     @Transactional
     public void save(User user) {
@@ -55,10 +66,17 @@ public class UserService {
 
     @Transactional
     public AddBasicInfoRes editBasicInfo(Long userId, AddBasicInfoReq addBasicInfoReq) {
-        User user = userRepository.findByUserId(userId).orElse(null);
+        User user = userRepository.getById(userId);
         user.setBirth(addBasicInfoReq.getBirth());
         user.setNickname(addBasicInfoReq.getNickName());
         return new AddBasicInfoRes(user.getUserId(), user.getEmail(), user.getBirth(), user.getNickname());
+    }
+
+    @Transactional
+    public void editProfileImg(Long userId, MultipartFile multipartFile) throws IOException {
+        User user = userRepository.getById(userId);
+        String fileName = s3Service.uploadImg(multipartFile);
+        user.setProfileUrl(Secret.CLOUD_FRONT_URL + "profile/" + fileName);
     }
 
     public boolean isUsedNickname(String nickname) {
@@ -82,7 +100,7 @@ public class UserService {
         String email = "";
         if (socialLoginType.equals(SocialLoginType.KAKAO)) email = kakaoService.getKakaoUserInfo(idToken);
         else if (socialLoginType.equals(SocialLoginType.APPLE)) {
-            appleService2.getClaimsBy("123");
+            email = appleService.userEmailFromApple(idToken);
         }
         String tmp = isUsedEmail(email);
         if (tmp == "using") { // 로그인
@@ -105,7 +123,7 @@ public class UserService {
         if (!jwtService.verifyRefreshJWT(refreshToken)) throw new BaseException(INVALID_TOKEN);
         else {
             Long userId = jwtService.getUserIdFromRefreshToken(refreshToken);
-            User user = userRepository.findByUserId(userId).orElse(null);
+            User user = userRepository.getById(userId);
 
             if (refreshToken.equals(user.getRefreshToken()))
                 return new LoginRes(jwtService.createJwt(userId), refreshToken);
@@ -138,7 +156,7 @@ public class UserService {
 
     @Transactional
     public void saveUserCategory(Long userId, List<Long> picks) {
-        User user = userRepository.findByUserId(userId).orElse(null);
+        User user = userRepository.getById(userId);
         List<Category> categories = new ArrayList();
         for (int i = 0; i < picks.size(); i++) {
             categories.add(categoryRepository.getById(picks.get(i)));
@@ -146,6 +164,70 @@ public class UserService {
         user.setCategories(categories);
     }
 
+    @Transactional
+    public void saveUserChallenge(Long userId, Long challengeId) throws BaseException {
+        User user = userRepository.getById(userId);
+        Challenge challenge = challengeRepository.getById(challengeId);
+        if (user.getChallenges().contains(challenge))
+            throw new BaseException(ALREADY_SAVED_CHALLENGE);
+        user.getChallenges().add(challenge);
+    }
+
+    @Transactional
+    public void deleteUserChallenge(Long userId, Long challengeId) throws BaseException {
+        User user = userRepository.getById(userId);
+        Challenge challenge = challengeRepository.getById(challengeId);
+        if (!user.getChallenges().contains(challenge))
+            throw new BaseException(NOT_SAVED_CHALLENGE);
+        user.getChallenges().remove(challenge);
+    }
+
+    public UserProfileRes getUserProfile(Long userId) {
+        return userRepository.findByUserId(userId).orElse(null);
+    }
+
+    @Transactional
+    public ReactVideoRes reactVideo(Long userId, Long videoId, Long mode) throws BaseException {
+        if (!(mode == 1 || mode == 2 || mode == 3)) throw new BaseException(INVALID_REACT);
+        if (!videoService.isValidVideoId(videoId)) throw new BaseException(INVALID_VIDEO_ID);
+        Long existed = userRepository.existedReact(userId, videoId).orElse(null);
+        String react = "";
+        if (mode == 1) {
+            react = "good";
+        } else if (mode == 2) {
+            react = "fire";
+        } else if (mode == 3) {
+            react = "face";
+        }
+        if (existed == null) {
+            LikeList likeList = LikeList.builder()
+                    .mode(mode)
+                    .user(userRepository.getById(userId))
+                    .video(videoRepository.getById(videoId))
+                    .build();
+            likeListRepository.save(likeList);
+            return new ReactVideoRes(react);
+        }
+        if (existed == mode) {
+            userRepository.editReact(userId, videoId, 0L);
+            return new ReactVideoRes("nothing");
+        } else {
+            userRepository.editReact(userId, videoId, mode);
+            return new ReactVideoRes(react);
+        }
+    }
+
+    public ReactNumRes getReactNum(Long videoId) throws BaseException {
+        if (!videoService.isValidVideoId(videoId)) throw new BaseException(INVALID_VIDEO_ID);
+        //999이상 처리하기
+        Long cGood = likeListRepository.countGood(videoId).orElse(0L);
+        if (cGood >= 999) cGood = 999L;
+        Long cFire = likeListRepository.countFire(videoId).orElse(0L);
+        if (cFire >= 999) cFire = 999L;
+        Long cFace = likeListRepository.countFace(videoId).orElse(0L);
+        if (cFace >= 999) cFace = 999L;
+        return new ReactNumRes(cGood, cFire, cFace);
+    }
 
     //챌린지 검색하기
     public List<SearchChallengeRes> searchChallengeWithKeyWord(String searchWord) {
@@ -174,7 +256,7 @@ public class UserService {
                 }
             }
         }
-        for (int i=0;i<challengeList.size();i++) {
+        for (int i = 0; i < challengeList.size(); i++) {
             searchChallengeRes.add(new SearchChallengeRes(challengeList.get(i).getChallengeId(),
                     challengeList.get(i).getName(),
                     challengeList.get(i).getCategory().getCategoryId()));

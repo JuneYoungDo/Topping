@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -22,8 +23,11 @@ public class Challenge {
     private Long challengeId;
     private String name;
     private String description;
+    @ColumnDefault("0")
     private Long viewCount;
+    @ColumnDefault("false")
     private boolean deleted;
+    @ColumnDefault("LocalDateTime.now()")
     private LocalDateTime createdAt;
 
     @ManyToOne

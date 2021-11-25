@@ -1,5 +1,6 @@
 package com.teenteen.topping.video;
 
+import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.challenge.ChallengeRepository;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
@@ -10,6 +11,7 @@ import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.S3Service;
 import com.teenteen.topping.utils.Secret;
 import com.teenteen.topping.video.VO.Video;
+import com.teenteen.topping.video.VideoDto.UserVideoList;
 import lombok.RequiredArgsConstructor;
 import org.jcodec.api.JCodecException;
 import org.springframework.stereotype.Service;
@@ -41,7 +43,7 @@ public class VideoService {
             throw new BaseException(BaseResponseStatus.INVALID_CHALLENGE);
         User user = userRepository.getById(userId);
         Challenge challenge = challengeRepository.getById(challengeId);
-        String fileName = s3Service.upload(file);
+        String fileName = s3Service.uploadVideo(file);
         Video video = Video.builder()
                 .url(Secret.CLOUD_FRONT_URL + fileName + "/Default/HLS/" + fileName + "_540.m3u8")
                 .thumbnail(Secret.CLOUD_FRONT_URL + fileName + "/Default/Thumbnails/" + fileName + ".0000000.jpg")
@@ -51,5 +53,18 @@ public class VideoService {
                 .user(user)
                 .build();
         save(video);
+    }
+
+    public List<UserVideoList> getUserFeeds(Long userId) {
+        return videoRepository.getVideosByUserId(userId).orElse(null);
+    }
+
+    public boolean isValidVideoId(Long videoId) {
+        if (videoRepository.existsById(videoId) == false)
+            return false;
+        Video video = videoRepository.getById(videoId);
+        if (video.isDeleted() == true)
+            return false;
+        return true;
     }
 }
