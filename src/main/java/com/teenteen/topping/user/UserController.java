@@ -248,9 +248,23 @@ public class UserController {
                                      @RequestBody UserReactVideoReq userReactVideoReq) {
         try {
             Long userId = jwtService.getUserId();
-            userService.reactVideo(userId, videoId, userReactVideoReq.getMode());
-            return new ResponseEntity(200, HttpStatus.valueOf(200));
+            return new ResponseEntity(
+                    userService.reactVideo(userId, videoId, userReactVideoReq.getMode()),
+                    HttpStatus.valueOf(200));
         } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+    /**
+     * 동영상 반응 가져오기
+     * [GET] /video/react/{videoId}
+     */
+    @GetMapping("/video/react/{videoId}")
+    public ResponseEntity reactNum(@PathVariable Long videoId) {
+        try{
+        return new ResponseEntity(userService.getReactNum(videoId),HttpStatus.valueOf(200));}
+        catch(BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
         }

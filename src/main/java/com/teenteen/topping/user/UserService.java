@@ -18,6 +18,7 @@ import com.teenteen.topping.utils.JwtService;
 import com.teenteen.topping.utils.S3Service;
 import com.teenteen.topping.utils.Secret;
 import com.teenteen.topping.video.VideoRepository;
+import com.teenteen.topping.video.VideoService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.data.jpa.repository.Modifying;
@@ -43,6 +44,7 @@ public class UserService {
     private final S3Service s3Service;
     private final KakaoService kakaoService;
     private final AppleService appleService;
+    private final VideoService videoService;
 
     @Transactional
     public void save(User user) {
@@ -185,8 +187,18 @@ public class UserService {
     }
 
     @Transactional
-    public void reactVideo(Long userId, Long videoId, Long mode) {
+    public ReactVideoRes reactVideo(Long userId, Long videoId, Long mode) throws BaseException {
+        if (!(mode == 1 || mode == 2 || mode == 3)) throw new BaseException(INVALID_REACT);
+        if (!videoService.isValidVideoId(videoId)) throw new BaseException(INVALID_VIDEO_ID);
         Long existed = userRepository.existedReact(userId, videoId).orElse(null);
+        String react = "";
+        if (mode == 1) {
+            react = "good";
+        } else if (mode == 2) {
+            react = "fire";
+        } else if (mode == 3) {
+            react = "face";
+        }
         if (existed == null) {
             LikeList likeList = LikeList.builder()
                     .mode(mode)
@@ -194,13 +206,27 @@ public class UserService {
                     .video(videoRepository.getById(videoId))
                     .build();
             likeListRepository.save(likeList);
+            return new ReactVideoRes(react);
         }
-        if (existed == mode) userRepository.editReact(userId, videoId, 0L);
-        else userRepository.editReact(userId, videoId, mode);
+        if (existed == mode) {
+            userRepository.editReact(userId, videoId, 0L);
+            return new ReactVideoRes("nothing");
+        } else {
+            userRepository.editReact(userId, videoId, mode);
+            return new ReactVideoRes(react);
+        }
     }
 
-    public void getReactNum(Long videoId) {
-        
+    public ReactNumRes getReactNum(Long videoId) throws BaseException {
+        if (!videoService.isValidVideoId(videoId)) throw new BaseException(INVALID_VIDEO_ID);
+        //999이상 처리하기
+        Long cGood = likeListRepository.countGood(videoId).orElse(0L);
+        if (cGood >= 999) cGood = 999L;
+        Long cFire = likeListRepository.countFire(videoId).orElse(0L);
+        if (cFire >= 999) cFire = 999L;
+        Long cFace = likeListRepository.countFace(videoId).orElse(0L);
+        if (cFace >= 999) cFace = 999L;
+        return new ReactNumRes(cGood, cFire, cFace);
     }
 
     //챌린지 검색하기

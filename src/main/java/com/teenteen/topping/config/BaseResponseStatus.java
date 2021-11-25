@@ -26,6 +26,8 @@ public enum BaseResponseStatus {
     INVALID_INPUT_NUM(400,"3개 이상 골라주세요.",117),
     ALREADY_SAVED_CHALLENGE(400,"이미 저장된 챌린지 입니다.",118),
     NOT_SAVED_CHALLENGE(400,"저장되지 않은 챌린지 입니다.",119),
+    INVALID_REACT(400,"올바르지 않은 반응입니다.",120),
+    INVALID_VIDEO_ID(400,"유효하지 않은 동영상 id 입니다.",121),
 
 
     PASSWORD_ENCRYPTION_ERROR(500, "비밀번호 암호화에 실패하였습니다.", 198),

@@ -1,5 +1,6 @@
 package com.teenteen.topping.video;
 
+import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.challenge.ChallengeRepository;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
@@ -56,5 +57,14 @@ public class VideoService {
 
     public List<UserVideoList> getUserFeeds(Long userId) {
         return videoRepository.getVideosByUserId(userId).orElse(null);
+    }
+
+    public boolean isValidVideoId(Long videoId) {
+        if (videoRepository.existsById(videoId) == false)
+            return false;
+        Video video = videoRepository.getById(videoId);
+        if (video.isDeleted() == true)
+            return false;
+        return true;
     }
 }
