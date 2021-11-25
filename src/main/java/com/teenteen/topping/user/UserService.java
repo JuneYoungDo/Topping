@@ -14,9 +14,12 @@ import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
 import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.JwtService;
+import com.teenteen.topping.utils.S3Service;
+import com.teenteen.topping.utils.Secret;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
@@ -32,6 +35,7 @@ public class UserService {
     private final CategoryRepository categoryRepository;
     private final ChallengeRepository challengeRepository;
     private final JwtService jwtService;
+    private final S3Service s3Service;
     private final KakaoService kakaoService;
     private final AppleService appleService;
 
@@ -55,10 +59,17 @@ public class UserService {
 
     @Transactional
     public AddBasicInfoRes editBasicInfo(Long userId, AddBasicInfoReq addBasicInfoReq) {
-        User user = userRepository.findByUserId(userId).orElse(null);
+        User user = userRepository.getById(userId);
         user.setBirth(addBasicInfoReq.getBirth());
         user.setNickname(addBasicInfoReq.getNickName());
         return new AddBasicInfoRes(user.getUserId(), user.getEmail(), user.getBirth(), user.getNickname());
+    }
+
+    @Transactional
+    public void editProfileImg(Long userId, MultipartFile multipartFile) throws IOException {
+        User user = userRepository.getById(userId);
+        String fileName = s3Service.uploadImg(multipartFile);
+        user.setProfileUrl(Secret.CLOUD_FRONT_URL + "profile/" + fileName);
     }
 
     public boolean isUsedNickname(String nickname) {
@@ -105,7 +116,7 @@ public class UserService {
         if (!jwtService.verifyRefreshJWT(refreshToken)) throw new BaseException(INVALID_TOKEN);
         else {
             Long userId = jwtService.getUserIdFromRefreshToken(refreshToken);
-            User user = userRepository.findByUserId(userId).orElse(null);
+            User user = userRepository.getById(userId);
 
             if (refreshToken.equals(user.getRefreshToken()))
                 return new LoginRes(jwtService.createJwt(userId), refreshToken);
@@ -138,7 +149,7 @@ public class UserService {
 
     @Transactional
     public void saveUserCategory(Long userId, List<Long> picks) {
-        User user = userRepository.findByUserId(userId).orElse(null);
+        User user = userRepository.getById(userId);
         List<Category> categories = new ArrayList();
         for (int i = 0; i < picks.size(); i++) {
             categories.add(categoryRepository.getById(picks.get(i)));
@@ -147,12 +158,26 @@ public class UserService {
     }
 
     @Transactional
-    public void saveUserChallenge(Long userId, Long challengeId) {
+    public void saveUserChallenge(Long userId, Long challengeId) throws BaseException {
         User user = userRepository.getById(userId);
         Challenge challenge = challengeRepository.getById(challengeId);
+        if (user.getChallenges().contains(challenge))
+            throw new BaseException(ALREADY_SAVED_CHALLENGE);
         user.getChallenges().add(challenge);
     }
 
+    @Transactional
+    public void deleteUserChallenge(Long userId, Long challengeId) throws BaseException {
+        User user = userRepository.getById(userId);
+        Challenge challenge = challengeRepository.getById(challengeId);
+        if(!user.getChallenges().contains(challenge))
+            throw new BaseException(NOT_SAVED_CHALLENGE);
+        user.getChallenges().remove(challenge);
+    }
+
+    public UserProfileRes getUserProfile(Long userId) {
+        return userRepository.findByUserId(userId).orElse(null);
+    }
 
     //챌린지 검색하기
     public List<SearchChallengeRes> searchChallengeWithKeyWord(String searchWord) {
@@ -181,7 +206,7 @@ public class UserService {
                 }
             }
         }
-        for (int i=0;i<challengeList.size();i++) {
+        for (int i = 0; i < challengeList.size(); i++) {
             searchChallengeRes.add(new SearchChallengeRes(challengeList.get(i).getChallengeId(),
                     challengeList.get(i).getName(),
                     challengeList.get(i).getCategory().getCategoryId()));

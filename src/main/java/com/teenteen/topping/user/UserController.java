@@ -4,6 +4,7 @@ import com.google.api.Http;
 import com.teenteen.topping.category.CategoryDto.MainCategoryReq;
 import com.teenteen.topping.category.CategoryService;
 import com.teenteen.topping.challenge.ChallengeDto.SearchChallengeReq;
+import com.teenteen.topping.challenge.ChallengeService;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponse;
 import com.teenteen.topping.config.BaseResponseStatus;
@@ -11,8 +12,8 @@ import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
 import com.teenteen.topping.utils.JwtService;
 import com.teenteen.topping.utils.S3Service;
+import com.teenteen.topping.video.VideoService;
 import lombok.RequiredArgsConstructor;
-import org.jcodec.api.JCodecException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -31,8 +32,9 @@ public class UserController {
     final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final UserService userService;
     private final JwtService jwtService;
-    private final S3Service s3Service;
+    private final ChallengeService challengeService;
     private final CategoryService categoryService;
+    private final VideoService videoService;
 
     /**
      * 닉네임 확인
@@ -81,6 +83,23 @@ public class UserController {
             Long userId = jwtService.getUserId();
             return new ResponseEntity(userService.editBasicInfo(userId, addBasicInfoReq),
                     HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 프로필 사진 바꾸기
+     * [POST] /user/info/img
+     */
+    @PostMapping("/user/info/img")
+    public ResponseEntity editUserImg(@RequestBody MultipartFile file) throws IOException {
+        try {
+            Long userId = jwtService.getUserId();
+            System.out.println(userId);
+            userService.editProfileImg(userId, file);
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
@@ -148,11 +167,69 @@ public class UserController {
      * [POST] /user/challenge
      */
     @PostMapping("/user/challenge")
-    public ResponseEntity saveUserChallenge(@RequestBody SaveUserChallengeReq saveUserChallengeReq) {
+    public ResponseEntity saveUserChallenge(@RequestBody UserChallengeReq userChallengeReq) {
         try {
             Long userId = jwtService.getUserId();
-            userService.saveUserChallenge(userId, saveUserChallengeReq.getChallengeId());
+            userService.saveUserChallenge(userId, userChallengeReq.getChallengeId());
             return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+    /**
+     * 토핑(챌린지) 삭제하기
+     * [PUT] /user/challenge
+     */
+    @PutMapping("/user/challenge")
+    public ResponseEntity deleteUserChallenge(@RequestBody UserChallengeReq userChallengeReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            userService.deleteUserChallenge(userId, userChallengeReq.getChallengeId());
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 마이페이지 보기
+     * [GET] /user/info
+     */
+    @GetMapping("/user")
+    public ResponseEntity myPage() {
+        try {
+            Long userId = jwtService.getUserId();
+            return new ResponseEntity(userService.getUserProfile(userId),HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+    /**
+     * 저장한 챌린지 보기
+     * [GET] /user/challenges
+     */
+    @GetMapping("/user/challenges")
+    public ResponseEntity myChallenges() {
+        try{
+            Long userId = jwtService.getUserId();
+            return new ResponseEntity(challengeService.getUserChallengeList(userId),HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+    /**
+     * 나의 피드 보기
+     * [GET] /user/feeds
+     */
+    @GetMapping("/user/feeds")
+    public ResponseEntity myFeeds() {
+        try{
+            Long userId = jwtService.getUserId();
+            return new ResponseEntity(videoService.getUserFeeds(userId),HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));

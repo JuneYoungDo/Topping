@@ -1,9 +1,12 @@
 package com.teenteen.topping.challenge;
 
 import com.teenteen.topping.challenge.ChallengeDto.ChallengeInfo;
+import com.teenteen.topping.challenge.ChallengeDto.UserChallengeRes;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponseStatus;
+import com.teenteen.topping.user.UserRepository;
+import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.video.VO.Video;
 import com.teenteen.topping.video.VideoDto.VideoListByChooseRes;
 import lombok.RequiredArgsConstructor;
@@ -12,12 +15,14 @@ import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class ChallengeService {
     private final ChallengeRepository challengeRepository;
+    private final UserRepository userRepository;
 
     public boolean isValidChallengeId(Long challengeId) {
         if (challengeRepository.existsByChallengeId(challengeId) == false)
@@ -63,6 +68,24 @@ public class ChallengeService {
                 null,
                 challenge.getCategory().getCategoryId()
         );
+    }
+
+    public List<UserChallengeRes> getUserChallengeList(Long userId) {
+        User user = userRepository.getById(userId);
+        List<UserChallengeRes> challengeResList = new ArrayList();
+        List<Challenge> challengeList = user.getChallenges();
+        Collections.reverse(challengeList);
+        for(int i=0;i<challengeList.size();i++) {
+            Challenge challenge = challengeList.get(i);
+            List<String> keyWords = new ArrayList();
+            for(int j=0;j<challenge.getKeyWords().size();j++) {
+                keyWords.add(challenge.getKeyWords().get(j).getWord());
+            }
+            UserChallengeRes userChallengeRes = new UserChallengeRes(challenge.getChallengeId(),
+                    challenge.getName(),keyWords);
+            challengeResList.add(userChallengeRes);
+        }
+        return challengeResList;
     }
 
 }

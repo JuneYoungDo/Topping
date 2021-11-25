@@ -21,10 +21,12 @@ public enum BaseResponseStatus {
     FAILED_TO_APPLE_LOGIN(400,"애플 로그인에 실패하였습니다.",112),
     FAILED_TO_FIND_AVAILABLE_RSA(400,"암호키를 찾지 못하였습니다.",113),
     EMPTY_ACCESS_TOKEN(400,"accessToken이 없습니다.",114),
-
-    INVALID_INPUT_NUM(400,"3개 이상 골라주세요.",114),
     INVALID_CHALLENGE(400,"유효하지 않은 토핑 id 입니다.",115),
     INVALID_CATEGORY(400,"유효하지 않은 카테고리 id 입니다.",116),
+    INVALID_INPUT_NUM(400,"3개 이상 골라주세요.",117),
+    ALREADY_SAVED_CHALLENGE(400,"이미 저장된 챌린지 입니다.",118),
+    NOT_SAVED_CHALLENGE(400,"저장되지 않은 챌린지 입니다.",119),
+
 
     PASSWORD_ENCRYPTION_ERROR(500, "비밀번호 암호화에 실패하였습니다.", 198),
     PASSWORD_DECRYPTION_ERROR(500, "비밀번호 복호화에 실패하였습니다.", 199);

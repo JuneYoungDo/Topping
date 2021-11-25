@@ -39,14 +39,13 @@ public class S3Service {
     @Value("${cloud.aws.region.static}")
     private String region;
 
-
-    public String upload(MultipartFile file) throws IOException {
+    public String uploadVideo(MultipartFile file) throws IOException {
         AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         s3Client = AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion(region)
                 .build();
-        String fileName = System.currentTimeMillis() + "a";
+        String fileName = System.currentTimeMillis() + "v";
 
         ObjectMetadata metadata = new ObjectMetadata();
         byte[] bytes = IOUtils.toByteArray(file.getInputStream());
@@ -56,14 +55,21 @@ public class S3Service {
         );
         return fileName;
     }
-
-    public void deleteFile(String source) {
+    public String uploadImg(MultipartFile file) throws IOException {
         AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
         s3Client = AmazonS3ClientBuilder.standard()
                 .withCredentials(new AWSStaticCredentialsProvider(credentials))
                 .withRegion(region)
                 .build();
-        s3Client.deleteObject(bucket + "/input", source);
+        String fileName = System.currentTimeMillis() + "profile.png";
+
+        ObjectMetadata metadata = new ObjectMetadata();
+        byte[] bytes = IOUtils.toByteArray(file.getInputStream());
+        metadata.setContentLength(bytes.length);
+        s3Client.putObject(new PutObjectRequest(bucket + "/profile", fileName, file.getInputStream(), metadata)
+                .withCannedAcl(CannedAccessControlList.PublicRead)
+        );
+        return fileName;
     }
 
     public List<String> uploadVideoWithThumbnail(MultipartFile file) throws IOException, JCodecException {
@@ -105,6 +111,15 @@ public class S3Service {
         fos.write(file.getBytes());
         fos.close();
         return convFile;
+    }
+
+    public void deleteFile(String source) {
+        AWSCredentials credentials = new BasicAWSCredentials(accessKey, secretKey);
+        s3Client = AmazonS3ClientBuilder.standard()
+                .withCredentials(new AWSStaticCredentialsProvider(credentials))
+                .withRegion(region)
+                .build();
+        s3Client.deleteObject(bucket + "/input", source);
     }
 
 }
