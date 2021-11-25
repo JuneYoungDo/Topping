@@ -177,6 +177,7 @@ public class UserController {
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
         }
     }
+
     /**
      * 토핑(챌린지) 삭제하기
      * [PUT] /user/challenge
@@ -201,35 +202,54 @@ public class UserController {
     public ResponseEntity myPage() {
         try {
             Long userId = jwtService.getUserId();
-            return new ResponseEntity(userService.getUserProfile(userId),HttpStatus.valueOf(200));
+            return new ResponseEntity(userService.getUserProfile(userId), HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
         }
     }
+
     /**
      * 저장한 챌린지 보기
      * [GET] /user/challenges
      */
     @GetMapping("/user/challenges")
     public ResponseEntity myChallenges() {
-        try{
+        try {
             Long userId = jwtService.getUserId();
-            return new ResponseEntity(challengeService.getUserChallengeList(userId),HttpStatus.valueOf(200));
+            return new ResponseEntity(challengeService.getUserChallengeList(userId), HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
         }
     }
+
     /**
      * 나의 피드 보기
      * [GET] /user/feeds
      */
     @GetMapping("/user/feeds")
     public ResponseEntity myFeeds() {
-        try{
+        try {
             Long userId = jwtService.getUserId();
-            return new ResponseEntity(videoService.getUserFeeds(userId),HttpStatus.valueOf(200));
+            return new ResponseEntity(videoService.getUserFeeds(userId), HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 동영상에 반응하기
+     * [POST] /user/react/{videoId}
+     */
+    @PostMapping("/user/react/{videoId}")
+    public ResponseEntity reactVideo(@PathVariable Long videoId,
+                                     @RequestBody UserReactVideoReq userReactVideoReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            userService.reactVideo(userId, videoId, userReactVideoReq.getMode());
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));

@@ -1,11 +1,13 @@
 package com.teenteen.topping.video.VO;
 
 import com.teenteen.topping.challenge.VO.Challenge;
+import com.teenteen.topping.user.VO.LikeList;
 import com.teenteen.topping.user.VO.User;
 import lombok.*;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Builder
@@ -27,4 +29,7 @@ public class Video {
     @ManyToOne
     @JoinColumn(name = "user_id")
     private User user;
+
+    @OneToMany(mappedBy = "video")
+    private List<LikeList> likeLists;
 }

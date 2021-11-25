@@ -12,12 +12,15 @@ import com.teenteen.topping.oauth.OauthService.AppleService;
 import com.teenteen.topping.oauth.OauthService.KakaoService;
 import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
+import com.teenteen.topping.user.VO.LikeList;
 import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.JwtService;
 import com.teenteen.topping.utils.S3Service;
 import com.teenteen.topping.utils.Secret;
+import com.teenteen.topping.video.VideoRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -32,8 +35,10 @@ import static com.teenteen.topping.config.BaseResponseStatus.*;
 @RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+    private final LikeListRepository likeListRepository;
     private final CategoryRepository categoryRepository;
     private final ChallengeRepository challengeRepository;
+    private final VideoRepository videoRepository;
     private final JwtService jwtService;
     private final S3Service s3Service;
     private final KakaoService kakaoService;
@@ -170,13 +175,32 @@ public class UserService {
     public void deleteUserChallenge(Long userId, Long challengeId) throws BaseException {
         User user = userRepository.getById(userId);
         Challenge challenge = challengeRepository.getById(challengeId);
-        if(!user.getChallenges().contains(challenge))
+        if (!user.getChallenges().contains(challenge))
             throw new BaseException(NOT_SAVED_CHALLENGE);
         user.getChallenges().remove(challenge);
     }
 
     public UserProfileRes getUserProfile(Long userId) {
         return userRepository.findByUserId(userId).orElse(null);
+    }
+
+    @Transactional
+    public void reactVideo(Long userId, Long videoId, Long mode) {
+        Long existed = userRepository.existedReact(userId, videoId).orElse(null);
+        if (existed == null) {
+            LikeList likeList = LikeList.builder()
+                    .mode(mode)
+                    .user(userRepository.getById(userId))
+                    .video(videoRepository.getById(videoId))
+                    .build();
+            likeListRepository.save(likeList);
+        }
+        if (existed == mode) userRepository.editReact(userId, videoId, 0L);
+        else userRepository.editReact(userId, videoId, mode);
+    }
+
+    public void getReactNum(Long videoId) {
+        
     }
 
     //챌린지 검색하기

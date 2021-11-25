@@ -43,4 +43,7 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "challenge_id"))
     private List<Challenge> challenges;
+
+    @OneToMany(mappedBy = "user")
+    private List<LikeList> likeLists;
 }
