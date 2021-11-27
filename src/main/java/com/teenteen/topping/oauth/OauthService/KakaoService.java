@@ -6,6 +6,8 @@ import com.google.gson.JsonParser;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponseStatus;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -18,6 +20,7 @@ import java.net.URL;
 @Service
 @RequiredArgsConstructor
 public class KakaoService {
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public String getKakaoUserInfo(String accessToken) throws BaseException, IOException {
         String reqUrl = "https://kapi.kakao.com/v2/user/me";

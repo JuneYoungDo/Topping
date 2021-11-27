@@ -21,20 +21,25 @@ import com.teenteen.topping.video.VideoRepository;
 import com.teenteen.topping.video.VideoService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.springframework.data.jpa.repository.Modifying;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static com.teenteen.topping.config.BaseResponseStatus.*;
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final UserRepository userRepository;
     private final LikeListRepository likeListRepository;
     private final CategoryRepository categoryRepository;

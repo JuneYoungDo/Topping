@@ -1,6 +1,5 @@
 package com.teenteen.topping.user;
 
-import com.google.api.Http;
 import com.teenteen.topping.category.CategoryDto.MainCategoryReq;
 import com.teenteen.topping.category.CategoryService;
 import com.teenteen.topping.challenge.ChallengeDto.SearchChallengeReq;
@@ -11,7 +10,6 @@ import com.teenteen.topping.config.BaseResponseStatus;
 import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
 import com.teenteen.topping.utils.JwtService;
-import com.teenteen.topping.utils.S3Service;
 import com.teenteen.topping.video.VideoService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

@@ -4,8 +4,11 @@ import com.google.gson.*;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponseStatus;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.util.ObjectUtils;
 
@@ -24,6 +27,7 @@ import java.util.Objects;
 @Service
 @RequiredArgsConstructor
 public class AppleService {
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
     public String userEmailFromApple(String idToken) throws BaseException {
         /**
          * 1. apple로 부터 공개키 3개 가져옴
@@ -75,7 +79,17 @@ public class AppleService {
 
         PublicKey publicKey = this.getPublicKey(avaliableObject);
 
-        Claims userInfo = Jwts.parser().setSigningKey(publicKey).parseClaimsJws(idToken).getBody();
+        Claims userInfo;
+        try {
+            userInfo = Jwts.parser().setSigningKey(publicKey).parseClaimsJws(idToken).getBody();
+        } catch (ExpiredJwtException e) {   // 토큰 만료
+            System.out.println(e);
+            throw new BaseException(BaseResponseStatus.INVALID_TOKEN);
+        } catch (Exception e) {     // 그 외 에러
+            System.out.println(e);
+            throw new BaseException(BaseResponseStatus.INVALID_TOKEN);
+        }
+
         JsonObject userInfoObject = (JsonObject) parser.parse(new Gson().toJson(userInfo));
         JsonElement appleAlg = userInfoObject.get("email");
         String userEmail = appleAlg.getAsString();

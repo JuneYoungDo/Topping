@@ -10,6 +10,8 @@ import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.video.VO.Video;
 import com.teenteen.topping.video.VideoDto.VideoListByChooseRes;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class ChallengeService {
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final ChallengeRepository challengeRepository;
     private final UserRepository userRepository;
 
