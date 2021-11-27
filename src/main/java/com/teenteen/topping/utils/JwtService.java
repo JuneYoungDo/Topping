@@ -3,6 +3,8 @@ package com.teenteen.topping.utils;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponseStatus;
 import io.jsonwebtoken.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -12,6 +14,7 @@ import java.util.Date;
 
 @Service
 public class JwtService {
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
     public String createJwt(Long userId) {
         Date now = new Date();
         Long expiredTime = 7 * 1000 * 60L * 60L * 24L; // 유효기간 24시간 (테스트용으로 우선 7일)

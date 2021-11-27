@@ -13,6 +13,8 @@ import com.teenteen.topping.config.BaseResponseStatus;
 import com.teenteen.topping.video.VO.Video;
 import com.teenteen.topping.video.VideoDto.VideoListByChooseRes;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,8 @@ import java.util.*;
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
+
     private final CategoryRepository categoryRepository;
 
     public List<CategoryListRes> getCategoryList() {

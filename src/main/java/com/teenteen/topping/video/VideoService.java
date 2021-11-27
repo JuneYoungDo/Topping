@@ -1,12 +1,10 @@
 package com.teenteen.topping.video;
 
-import com.teenteen.topping.category.VO.Category;
 import com.teenteen.topping.challenge.ChallengeRepository;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponseStatus;
 import com.teenteen.topping.user.UserRepository;
-import com.teenteen.topping.user.UserService;
 import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.S3Service;
 import com.teenteen.topping.utils.Secret;
@@ -14,6 +12,8 @@ import com.teenteen.topping.video.VO.Video;
 import com.teenteen.topping.video.VideoDto.UserVideoList;
 import lombok.RequiredArgsConstructor;
 import org.jcodec.api.JCodecException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,6 +25,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class VideoService {
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
     private final S3Service s3Service;
     private final UserRepository userRepository;
     private final ChallengeRepository challengeRepository;

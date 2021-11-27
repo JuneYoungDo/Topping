@@ -14,6 +14,8 @@ import org.jcodec.api.FrameGrab;
 import org.jcodec.api.JCodecException;
 import org.jcodec.common.model.Picture;
 import org.jcodec.scale.AWTUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +30,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 public class S3Service {
+    final Logger logger = LoggerFactory.getLogger(this.getClass());
     private AmazonS3 s3Client;
 
     @Value("${cloud.aws.credentials.accessKey}")

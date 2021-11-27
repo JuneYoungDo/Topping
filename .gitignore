@@ -26,6 +26,7 @@ src/main/java/com/teenteen/topping/utils/Secret.java
 Dockerfile
 logs
 firebase
+logback-spring.xml
 
 ### IntelliJ IDEA ###
 .idea
