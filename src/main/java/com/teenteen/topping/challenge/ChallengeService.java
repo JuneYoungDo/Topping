@@ -45,6 +45,7 @@ public class ChallengeService {
         for (int i = 0; i < videoList.size(); i++) {
             Video video = videoList.get(i);
             videoListByChooseRes.add(new VideoListByChooseRes(
+                    video.getVideoId(),
                     video.getUrl(),
                     video.getChallenge().getChallengeId(),
                     video.getChallenge().getName(),
@@ -84,7 +85,9 @@ public class ChallengeService {
             for(int j=0;j<challenge.getKeyWords().size();j++) {
                 keyWords.add(challenge.getKeyWords().get(j).getWord());
             }
-            UserChallengeRes userChallengeRes = new UserChallengeRes(challenge.getChallengeId(),
+            UserChallengeRes userChallengeRes = new UserChallengeRes(
+                    challenge.getCategory().getCategoryId(),
+                    challenge.getChallengeId(),
                     challenge.getName(),keyWords);
             challengeResList.add(userChallengeRes);
         }

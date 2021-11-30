@@ -52,6 +52,7 @@ public class CategoryService {
         for (int i = 0; i < videoList.size(); i++) {
             Video video = videoList.get(i);
             videoListByChooseRes.add(new VideoListByChooseRes(
+                    video.getVideoId(),
                     video.getUrl(),
                     video.getChallenge().getChallengeId(),
                     video.getChallenge().getName(),

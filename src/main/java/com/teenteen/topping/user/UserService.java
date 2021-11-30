@@ -70,6 +70,12 @@ public class UserService {
     }
 
     @Transactional
+    public void deleteUser(Long userId) {
+        User user = userRepository.getById(userId);
+        userRepository.deleteUserByUserId(userId);
+    }
+
+    @Transactional
     public AddBasicInfoRes editBasicInfo(Long userId, AddBasicInfoReq addBasicInfoReq) {
         User user = userRepository.getById(userId);
         user.setBirth(addBasicInfoReq.getBirth());
@@ -111,27 +117,25 @@ public class UserService {
         if (tmp == "using") { // 로그인
             User user = userRepository.findByEmail(email).orElse(null);
             user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
-            return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken());
-        } else if (tmp == "deleted") { // 삭제된 계정 -> 추후 처리
-            return new LoginRes("Deleted", "Deleted");
+            return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken(), user.getNickname());
+//        } else if (tmp == "deleted") { // 삭제된 계정 -> 추후 처리
+//            return new LoginRes("Deleted", "Deleted",);
         } else {    // 회원 가입
             createUser(email);
             User user = userRepository.findByEmail(email).orElse(null);
             user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
-            return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken());
+            return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken(), user.getNickname());
         }
     }
 
-    public LoginRes renewalAccessToken(RefreshTokenReq refreshTokenReq) throws BaseException {
-        String refreshToken = refreshTokenReq.getRefreshToken();
+    public LoginRes renewalAccessToken(Long userId, String refreshToken) throws BaseException {
         if (refreshToken.equals("") || refreshToken.length() == 0) throw new BaseException(EMPTY_REFRESH_TOKEN);
         if (!jwtService.verifyRefreshJWT(refreshToken)) throw new BaseException(INVALID_TOKEN);
         else {
-            Long userId = jwtService.getUserIdFromRefreshToken(refreshToken);
             User user = userRepository.getById(userId);
 
             if (refreshToken.equals(user.getRefreshToken()))
-                return new LoginRes(jwtService.createJwt(userId), refreshToken);
+                return new LoginRes(jwtService.createJwt(userId), refreshToken, user.getNickname());
             else
                 throw new BaseException(INVALID_TOKEN);
         }
