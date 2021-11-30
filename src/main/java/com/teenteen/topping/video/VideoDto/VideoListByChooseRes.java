@@ -7,6 +7,7 @@ import lombok.Setter;
 
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class VideoListByChooseRes {
+    private Long videoId;
     private String url;
     private Long challengeId;
     private String challengeName;

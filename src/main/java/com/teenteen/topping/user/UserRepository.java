@@ -24,4 +24,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query(value = "update like_list l set l.mode = :mode " +
             "where l.user.userId = :userId and l.video.videoId = :videoId")
     int editReact(Long userId, Long videoId, Long mode);
+
+    void deleteUserByUserId(Long userId);
+
 }

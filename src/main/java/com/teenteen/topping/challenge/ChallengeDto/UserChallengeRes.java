@@ -9,6 +9,7 @@ import java.util.List;
 
 @Getter @Setter @AllArgsConstructor @NoArgsConstructor
 public class UserChallengeRes {
+    private Long categoryId;
     private Long challengeId;
     private String challengeName;
     private List<String> keyWords;

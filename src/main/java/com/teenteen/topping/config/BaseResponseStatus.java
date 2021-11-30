@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 public enum BaseResponseStatus {
 
     EMPTY_JWT(400, "JWT가 없습니다.", 101),
-    INVALID_JWT(400,"JWT가 유효하지 않습니다.",102),
+    INVALID_JWT(401,"JWT가 유효하지 않습니다.",102),
     USER_IS_NOT_AVAILABLE(400, "사용자가 유효하지 않습니다.", 103),
     CUSTOM_ERROR(400,"",104),
     EXISTS_USER_EMAIL(400,"이미 사용중인 이메일입니다.",105),
@@ -23,7 +23,7 @@ public enum BaseResponseStatus {
     EMPTY_ACCESS_TOKEN(400,"accessToken이 없습니다.",114),
     INVALID_CHALLENGE(400,"유효하지 않은 토핑 id 입니다.",115),
     INVALID_CATEGORY(400,"유효하지 않은 카테고리 id 입니다.",116),
-    INVALID_INPUT_NUM(400,"3개 이상 골라주세요.",117),
+    INVALID_INPUT_NUM(400,"3개 이상, 6개 이하로 골라주세요.",117),
     ALREADY_SAVED_CHALLENGE(400,"이미 저장된 챌린지 입니다.",118),
     NOT_SAVED_CHALLENGE(400,"저장되지 않은 챌린지 입니다.",119),
     INVALID_REACT(400,"올바르지 않은 반응입니다.",120),

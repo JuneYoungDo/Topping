@@ -29,7 +29,7 @@ public class User {
     private boolean deleted;
     private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<Video> videos;
 
     @ManyToMany
@@ -44,6 +44,9 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "challenge_id"))
     private List<Challenge> challenges;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<LikeList> likeLists;
+//
+//    @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL}, orphanRemoval = true)
+//    private List<SystemMessage> messages;
 }

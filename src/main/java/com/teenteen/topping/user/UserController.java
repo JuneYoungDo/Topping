@@ -106,12 +106,30 @@ public class UserController {
 
     /**
      * refreshToken을 이용한 accessToken 재발급
-     * [POST] /login/refresh
+     * [GET] /login/refresh
      */
-    @PostMapping("/login/refresh")
-    public ResponseEntity renewalAccessToken(@RequestBody RefreshTokenReq refreshTokenReq) {
+    @GetMapping("/login/refresh")
+    public ResponseEntity renewalAccessToken() {
         try {
-            return new ResponseEntity(userService.renewalAccessToken(refreshTokenReq), HttpStatus.valueOf(200));
+            String refreshToken = jwtService.getRefreshJwt();
+            Long userId = jwtService.getUserIdFromRefreshToken();
+            return new ResponseEntity(userService.renewalAccessToken(userId, refreshToken), HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 회원 탈퇴하기 (유저정보 삭제)
+     * [DELETE] /user
+     */
+    @DeleteMapping("/user")
+    public ResponseEntity deleteUser() {
+        try {
+            Long userId = jwtService.getUserId();
+            userService.deleteUser(userId);
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
@@ -146,13 +164,12 @@ public class UserController {
      */
     @PostMapping("/user/category")
     public ResponseEntity saveUserCategory(@RequestBody MainCategoryReq mainCategoryReq) {
-        if (mainCategoryReq.getPick1() == null || mainCategoryReq.getPick2() == null ||
-                mainCategoryReq.getPick3() == null)
+        if (mainCategoryReq.getPicks().size() < 3 || mainCategoryReq.getPicks().size() > 6)
             return new ResponseEntity(new BaseResponse(BaseResponseStatus.INVALID_INPUT_NUM),
                     HttpStatus.valueOf(400));
         try {
             Long userId = jwtService.getUserId();
-            userService.saveUserCategory(userId, mainCategoryReq.makePicks());
+            userService.saveUserCategory(userId, mainCategoryReq.getPicks());
             return new ResponseEntity(200, HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
@@ -254,15 +271,16 @@ public class UserController {
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
         }
     }
+
     /**
      * 동영상 반응 가져오기
      * [GET] /video/react/{videoId}
      */
     @GetMapping("/video/react/{videoId}")
     public ResponseEntity reactNum(@PathVariable Long videoId) {
-        try{
-        return new ResponseEntity(userService.getReactNum(videoId),HttpStatus.valueOf(200));}
-        catch(BaseException exception) {
+        try {
+            return new ResponseEntity(userService.getReactNum(videoId), HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
         }
