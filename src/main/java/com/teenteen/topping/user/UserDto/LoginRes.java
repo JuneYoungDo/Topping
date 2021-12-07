@@ -10,4 +10,5 @@ public class LoginRes {
     private String accessToken;
     private String refreshToken;
     private String nickname;
+    private String birth;
 }
