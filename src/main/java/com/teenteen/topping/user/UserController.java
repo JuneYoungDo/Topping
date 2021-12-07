@@ -287,13 +287,137 @@ public class UserController {
     }
 
     /**
-     * Topping(Challenge) 검색하기
-     * [POST] /user/challenge
+     * 유저 차단하기
+     * [POST] /user/blackList
      */
-    @PostMapping("/search/challenge")
-    public ResponseEntity SearchChallenge(@RequestBody SearchChallengeReq searchWord) {
-        return new ResponseEntity(userService.searchChallengeWithKeyWord(searchWord.getSearchWord()),
-                HttpStatus.valueOf(200));
+    @PostMapping("/user/blackList")
+    public ResponseEntity blockUser(@RequestBody BlockUserReq blockUserReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            Long blockUserId = blockUserReq.getUserId();
+            userService.blockUser(userId, blockUserId);
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 유저 차단 해제하기
+     * [POST] /user/blackList/clear
+     */
+    @PostMapping("/user/blackList/clear")
+    public ResponseEntity clearUser(@RequestBody BlockUserReq blockUserReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            Long blockUserId = blockUserReq.getUserId();
+            userService.clearUser(userId, blockUserId);
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 유저 차단목록 확인하기
+     * [GET] /user/blackList
+     */
+    @GetMapping("/user/blackList")
+    public ResponseEntity userBlackList() {
+        try {
+            Long userId = jwtService.getUserId();
+            return new ResponseEntity(userService.blockUserList(userId), HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+
+    /**
+     * 동영상 차단하기
+     * [POST] /video/blackList
+     */
+    @PostMapping("/video/blackList")
+    public ResponseEntity blockVideo(@RequestBody BlockVideoReq blockVideoReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            Long blockVideoId = blockVideoReq.getVideoId();
+            userService.blockVideo(userId, blockVideoId);
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 동영상 차단 해제하기
+     * [POST] /video/blackList/clear
+     */
+    @PostMapping("/video/blackList/clear")
+    public ResponseEntity clearVideo(@RequestBody BlockVideoReq blockVideoReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            Long blockVideoId = blockVideoReq.getVideoId();
+            userService.clearVideo(userId, blockVideoId);
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 동영상 차단목록 확인하기
+     * [GET] /video/blackList
+     */
+    @GetMapping("/video/blackList")
+    public ResponseEntity videoBlackList() {
+        try {
+            Long userId = jwtService.getUserId();
+            return new ResponseEntity(userService.blockVideoList(userId), HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 동영상 신고하기
+     * [POST] /video/report
+     */
+    // 방식을 바꿀만함 -> 각 동영상 컬럼에 신고 횟수를 넣는다?
+    @PostMapping("/video/report")
+    public ResponseEntity videoReport(@RequestBody BlockVideoReq blockVideoReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            Long videoId = blockVideoReq.getVideoId();
+            videoService.reportVideo(userId, videoId);
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
+     * 사용자 신고하기
+     * [POST] /user/report
+     */
+    @PostMapping("/user/report")
+    public ResponseEntity userReport(@RequestBody BlockUserReq blockUserReq) {
+        try {
+            Long userId = jwtService.getUserId();
+            Long suspicionUserId = blockUserReq.getUserId();
+            userService.reportUser(userId, suspicionUserId);
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
     }
 
 }

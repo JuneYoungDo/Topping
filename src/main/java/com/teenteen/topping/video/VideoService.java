@@ -8,8 +8,10 @@ import com.teenteen.topping.user.UserRepository;
 import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.S3Service;
 import com.teenteen.topping.utils.Secret;
+import com.teenteen.topping.video.VO.SuspicionVideo;
 import com.teenteen.topping.video.VO.Video;
 import com.teenteen.topping.video.VideoDto.UserVideoList;
+import com.teenteen.topping.video.VideoDto.VideoListByChooseRes;
 import lombok.RequiredArgsConstructor;
 import org.jcodec.api.JCodecException;
 import org.slf4j.Logger;
@@ -22,6 +24,8 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import static com.teenteen.topping.config.BaseResponseStatus.INVALID_VIDEO_ID;
+
 @Service
 @RequiredArgsConstructor
 public class VideoService {
@@ -30,6 +34,7 @@ public class VideoService {
     private final UserRepository userRepository;
     private final ChallengeRepository challengeRepository;
     private final VideoRepository videoRepository;
+    private final SuspicionVideoRepository suspicionVideoRepository;
 
     @Transactional
     public void save(Video video) {
@@ -67,5 +72,30 @@ public class VideoService {
         if (video.isDeleted() == true)
             return false;
         return true;
+    }
+
+    public VideoListByChooseRes getVideo(Long videoId) throws BaseException {
+        if (!isValidVideoId(videoId)) throw new BaseException(BaseResponseStatus.INVALID_VIDEO_ID);
+        Video video = videoRepository.getById(videoId);
+        User user = video.getUser();
+        Challenge challenge = video.getChallenge();
+        return new VideoListByChooseRes(video.getVideoId(), video.getUrl(),
+                challenge.getChallengeId(), challenge.getName(),
+                user.getUserId(), user.getNickname(), user.getProfileUrl());
+    }
+
+    @Transactional
+    public void reportVideo(Long userId, Long videoId) throws BaseException {
+        if (!isValidVideoId(videoId)) throw new BaseException(INVALID_VIDEO_ID);
+        SuspicionVideo suspicionVideo = SuspicionVideo.builder()
+                .userId(userId)
+                .videoId(videoId)
+                .build();
+        suspicionVideoRepository.save(suspicionVideo);
+
+        if (suspicionVideoRepository.countReport(videoId).orElse(0L) >= 10) {
+            Video video = videoRepository.getById(videoId);
+            video.setDeleted(true);
+        }
     }
 }

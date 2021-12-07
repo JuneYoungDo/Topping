@@ -29,6 +29,16 @@ public class User {
     private boolean deleted;
     private LocalDateTime createdAt;
 
+    @ManyToMany
+    @JoinTable(name = "user_black_list",
+            joinColumns = @JoinColumn(name = "user_id"))
+    private List<User> blackList;
+
+    @ManyToMany
+    @JoinTable(name = "video_black_list",
+            joinColumns = @JoinColumn(name = "user_id"))
+    private List<Video> blockVideos;
+
     @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<Video> videos;
 
@@ -46,7 +56,4 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<LikeList> likeLists;
-//
-//    @OneToMany(mappedBy = "user", cascade = {CascadeType.ALL}, orphanRemoval = true)
-//    private List<SystemMessage> messages;
 }

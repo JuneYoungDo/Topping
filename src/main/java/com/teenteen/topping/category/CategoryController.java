@@ -29,23 +29,21 @@ public class CategoryController {
     private final UserRepository userRepository;
 
     /**
-     * 테스트
-     */
-    @PostMapping("/ch/test")
-    public ResponseEntity test() {
-
-        return new ResponseEntity(200, HttpStatus.valueOf(200));
-    }
-
-    /**
      * 카테고리 선택시 동영상 가져오기(Random)
      * [GET] /category/{categoryId}
      */
     @GetMapping("/videos/category/{categoryId}")
     public ResponseEntity getVideoListOfCategoryId(@PathVariable Long categoryId) {
         try {
-            return new ResponseEntity(categoryService.getRandomVideoByCategoryId(categoryId)
-                    , HttpStatus.valueOf(200));
+            if (jwtService.getJwt() == null || jwtService.getJwt() == "") {
+                return new ResponseEntity(categoryService.getRandomVideoByCategoryId(null, categoryId),
+                        HttpStatus.valueOf(200));
+            } else {
+                Long userId = jwtService.getUserId();
+                User user = userRepository.getById(userId);
+                return new ResponseEntity(categoryService.getRandomVideoByCategoryId(user, categoryId),
+                        HttpStatus.valueOf(200));
+            }
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
@@ -59,17 +57,16 @@ public class CategoryController {
     @GetMapping("/main")
     public ResponseEntity getMainCategory() {
         try {
-            // 추후 예정
             if (jwtService.getJwt() == null || jwtService.getJwt() == "") {
-                List<Long> picks = new ArrayList(Arrays.asList(2L,3L,5L,7L,4L,11L));
-                return new ResponseEntity(categoryService.mainFeedCategory(picks), HttpStatus.valueOf(200));
+                List<Long> picks = new ArrayList(Arrays.asList(2L, 3L, 5L, 7L, 4L, 11L));
+                return new ResponseEntity(categoryService.mainFeedCategory(null, picks), HttpStatus.valueOf(200));
             } else {
                 Long userId = jwtService.getUserId();
                 User user = userRepository.getById(userId);
                 List<Long> picks = new ArrayList();
                 for (int i = 0; i < user.getCategories().size(); i++)
                     picks.add(user.getCategories().get(i).getCategoryId());
-                return new ResponseEntity(categoryService.mainFeedCategory(picks),
+                return new ResponseEntity(categoryService.mainFeedCategory(user, picks),
                         HttpStatus.valueOf(200));
             }
         } catch (BaseException exception) {
@@ -86,7 +83,7 @@ public class CategoryController {
     @GetMapping("/challenges/category/{categoryId}/{sortMethod}")
     public ResponseEntity getChallenges(@PathVariable Long categoryId, @PathVariable Long sortMethod) {
         try {
-            return new ResponseEntity(categoryService.getChallengesByCategory(categoryId,sortMethod),
+            return new ResponseEntity(categoryService.getChallengesByCategory(categoryId, sortMethod),
                     HttpStatus.valueOf(200));
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),

@@ -13,10 +13,14 @@ import com.teenteen.topping.oauth.OauthService.KakaoService;
 import com.teenteen.topping.oauth.helper.SocialLoginType;
 import com.teenteen.topping.user.UserDto.*;
 import com.teenteen.topping.user.VO.LikeList;
+import com.teenteen.topping.user.VO.SuspicionUser;
 import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.JwtService;
 import com.teenteen.topping.utils.S3Service;
 import com.teenteen.topping.utils.Secret;
+import com.teenteen.topping.video.SuspicionVideoRepository;
+import com.teenteen.topping.video.VO.SuspicionVideo;
+import com.teenteen.topping.video.VO.Video;
 import com.teenteen.topping.video.VideoRepository;
 import com.teenteen.topping.video.VideoService;
 import lombok.RequiredArgsConstructor;
@@ -50,6 +54,7 @@ public class UserService {
     private final KakaoService kakaoService;
     private final AppleService appleService;
     private final VideoService videoService;
+    private final SuspicionUserRepository suspicionUserRepository;
 
     @Transactional
     public void save(User user) {
@@ -117,14 +122,16 @@ public class UserService {
         if (tmp == "using") { // 로그인
             User user = userRepository.findByEmail(email).orElse(null);
             user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
-            return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken(), user.getNickname());
+            return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken(),
+                    user.getNickname(), user.getBirth());
 //        } else if (tmp == "deleted") { // 삭제된 계정 -> 추후 처리
 //            return new LoginRes("Deleted", "Deleted",);
         } else {    // 회원 가입
             createUser(email);
             User user = userRepository.findByEmail(email).orElse(null);
             user.setRefreshToken(jwtService.createRefreshToken(user.getUserId()));
-            return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken(), user.getNickname());
+            return new LoginRes(jwtService.createJwt(user.getUserId()), user.getRefreshToken(),
+                    user.getNickname(), null);
         }
     }
 
@@ -135,7 +142,7 @@ public class UserService {
             User user = userRepository.getById(userId);
 
             if (refreshToken.equals(user.getRefreshToken()))
-                return new LoginRes(jwtService.createJwt(userId), refreshToken, user.getNickname());
+                return new LoginRes(jwtService.createJwt(userId), refreshToken, user.getNickname(), user.getBirth());
             else
                 throw new BaseException(INVALID_TOKEN);
         }
@@ -236,6 +243,90 @@ public class UserService {
         Long cFace = likeListRepository.countFace(videoId).orElse(0L);
         if (cFace >= 999) cFace = 999L;
         return new ReactNumRes(cGood, cFire, cFace);
+    }
+
+    @Transactional
+    public void blockUser(Long userId, Long blockUserId) throws BaseException {
+        if (jwtService.isValidUser(blockUserId) == false) throw new BaseException(USER_IS_NOT_AVAILABLE);
+        User user = userRepository.getById(userId);
+        User blockUser = userRepository.getById(blockUserId);
+        if (user == blockUser) throw new BaseException(ITS_YOURSELF);
+        if (user.getBlackList().contains(blockUser)) throw new BaseException(ALREADY_BLOCKED_USER);
+        List<User> blackList = user.getBlackList();
+        blackList.add(blockUser);
+        user.setBlackList(blackList);
+    }
+
+    @Transactional
+    public void clearUser(Long userId, Long blockUserId) throws BaseException {
+        if (jwtService.isValidUser(blockUserId) == false) throw new BaseException(USER_IS_NOT_AVAILABLE);
+        User user = userRepository.getById(userId);
+        User blockUser = userRepository.getById(blockUserId);
+        if (!user.getBlackList().contains(blockUser)) throw new BaseException(ALREADY_CLEAR_USER);
+        List<User> blackList = user.getBlackList();
+        blackList.remove(blockUser);
+        user.setBlackList(blackList);
+    }
+
+    public List<BlockUserRes> blockUserList(Long userId) {
+        User user = userRepository.getById(userId);
+        List<User> blackList = user.getBlackList();
+        List<BlockUserRes> blockUserResList = new ArrayList<>();
+        for (int i = 0; i < blackList.size(); i++) {
+            blockUserResList.add(new BlockUserRes(blackList.get(i).getUserId(),
+                    blackList.get(i).getNickname()));
+        }
+        return blockUserResList;
+    }
+
+    @Transactional
+    public void blockVideo(Long userId, Long blockVideoId) throws BaseException {
+        if (videoService.isValidVideoId(blockVideoId) == false) throw new BaseException(INVALID_VIDEO_ID);
+        User user = userRepository.getById(userId);
+        Video video = videoRepository.getById(blockVideoId);
+        if (user.getVideos().contains(video)) throw new BaseException(ITS_YOUR_VIDEO);
+        if (user.getBlockVideos().contains(video)) throw new BaseException(ALREADY_BLOCKED_VIDEO);
+        List<Video> blockVideoList = user.getBlockVideos();
+        blockVideoList.add(video);
+        user.setBlockVideos(blockVideoList);
+    }
+
+    @Transactional
+    public void clearVideo(Long userId, Long blockVideoId) throws BaseException {
+        if (!videoService.isValidVideoId(blockVideoId)) throw new BaseException(INVALID_VIDEO_ID);
+        User user = userRepository.getById(userId);
+        Video video = videoRepository.getById(blockVideoId);
+        if (!user.getBlockVideos().contains(video)) throw new BaseException(ALREADY_CLEAR_VIDEO);
+        List<Video> blockVideoList = user.getBlockVideos();
+        blockVideoList.remove(video);
+        user.setBlockVideos(blockVideoList);
+    }
+
+    public List<BlockVideoRes> blockVideoList(Long userId) {
+        User user = userRepository.getById(userId);
+        List<Video> videoBlockList = user.getBlockVideos();
+        List<BlockVideoRes> blockVideoResList = new ArrayList<>();
+        for (int i = 0; i < videoBlockList.size(); i++) {
+            blockVideoResList.add(new BlockVideoRes(videoBlockList.get(i).getVideoId(),
+                    videoBlockList.get(i).getThumbnail()));
+        }
+        return blockVideoResList;
+    }
+
+    @Transactional
+    public void reportUser(Long userId, Long suspicionUserId) throws BaseException {
+        if (!jwtService.isValidUser(suspicionUserId)) throw new BaseException(USER_IS_NOT_AVAILABLE);
+        SuspicionUser suspicionUser = SuspicionUser.builder()
+                .userId(userId)
+                .suspicionUserId(suspicionUserId)
+                .build();
+
+        suspicionUserRepository.save(suspicionUser);
+
+        if (suspicionUserRepository.countReport(suspicionUserId).orElse(0L) >= 10) {
+            Video video = videoRepository.getById(suspicionUserId);
+            video.setDeleted(true);
+        }
     }
 
     //챌린지 검색하기

@@ -28,6 +28,12 @@ public enum BaseResponseStatus {
     NOT_SAVED_CHALLENGE(400,"저장되지 않은 챌린지 입니다.",119),
     INVALID_REACT(400,"올바르지 않은 반응입니다.",120),
     INVALID_VIDEO_ID(400,"유효하지 않은 동영상 id 입니다.",121),
+    ALREADY_BLOCKED_USER(400,"이미 차단된 유저입니다.",122),
+    ALREADY_CLEAR_USER(400,"차단되지 않은 유저입니다.",123),
+    ALREADY_BLOCKED_VIDEO(400,"이미 차단된 동영상입니다.",124),
+    ALREADY_CLEAR_VIDEO(400,"차단되지 않은 동영상입니다.",125),
+    ITS_YOUR_VIDEO(400,"당신이 올린 동영상입니다!",126),
+    ITS_YOURSELF(400,"본인을 차단할 수 없습니다!",127),
 
 
     PASSWORD_ENCRYPTION_ERROR(500, "비밀번호 암호화에 실패하였습니다.", 198),

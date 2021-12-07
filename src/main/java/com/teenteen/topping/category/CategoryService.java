@@ -10,6 +10,7 @@ import com.teenteen.topping.challenge.ChallengeDto.SimpleSearchRes;
 import com.teenteen.topping.challenge.VO.Challenge;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponseStatus;
+import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.video.VO.Video;
 import com.teenteen.topping.video.VideoDto.VideoListByChooseRes;
 import lombok.RequiredArgsConstructor;
@@ -41,16 +42,20 @@ public class CategoryService {
     }
 
     // 카테고리 번호를 이용하여 관련된 동영상 랜덤하게 가져옴
-    public List<VideoListByChooseRes> getRandomVideoByCategoryId(Long categoryId) throws BaseException {
+    public List<VideoListByChooseRes> getRandomVideoByCategoryId(User user, Long categoryId) throws BaseException {
         if (isValidCategoryId(categoryId) == false)
             throw new BaseException(BaseResponseStatus.INVALID_CATEGORY);
         List<Video> videoList = categoryRepository
                 .getVideoByCategory(categoryRepository.getById(categoryId),
                         PageRequest.of(0, 50))  // 50개 까지만
                 .orElse(null);
+
         List<VideoListByChooseRes> videoListByChooseRes = new ArrayList();
         for (int i = 0; i < videoList.size(); i++) {
             Video video = videoList.get(i);
+            User videoUser = video.getUser();
+            if (user != null && user.getBlackList().contains(videoUser)) continue;
+            if (user != null && user.getBlockVideos().contains(video)) continue;
             videoListByChooseRes.add(new VideoListByChooseRes(
                     video.getVideoId(),
                     video.getUrl(),
@@ -64,7 +69,7 @@ public class CategoryService {
         return videoListByChooseRes;
     }
 
-    public MainFeedRes mainFeedCategory(List<Long> picks) {
+    public MainFeedRes mainFeedCategory(User user, List<Long> picks) {
         List<Long> origin = new ArrayList();
         for (int i = 0; i < picks.size(); i++) {
             origin.add(picks.get(i));
@@ -95,31 +100,41 @@ public class CategoryService {
             categoryMap.remove(randomKey);
         }
 
-        return new MainFeedRes(returnList, mainFeedTopping(origin));
+        return new MainFeedRes(returnList, mainFeedTopping(user, origin));
     }
 
-    public List<ChallengeListRes> mainFeedTopping(List<Long> list) {
+    public List<ChallengeListRes> mainFeedTopping(User user, List<Long> list) {
         List<Category> categoryList = new ArrayList();
         List<ChallengeListRes> challengeListRes = new ArrayList();
         for (int i = 0; i < list.size(); i++) {
             categoryList.add(categoryRepository.getById(list.get(i)));
         }
-        List<Challenge> challengeList = categoryRepository.getChallengeByCategory(categoryList)
+        List<Challenge> challengeList = categoryRepository.getChallengesByCategory(categoryList)
                 .orElse(null);
         int maxList;
-        if (challengeList.size() > 50)
-            maxList = 50;
-        else
-            maxList = challengeList.size();
+        if (challengeList.size() > 50) maxList = 50;
+        else maxList = challengeList.size();
         for (int i = 0; i < maxList; i++) {
             Challenge challenge = challengeList.get(i);
             List<Video> videos = categoryRepository
-                    .getRecentVideoByChallenge(challenge, PageRequest.of(0, 1))
+                    .getRecentVideoByChallenge(challenge, PageRequest.of(0, 50))
                     .orElse(null);
-            String thumbnailUrl;
+            String thumbnailUrl = null;
             if (videos.size() == 0) thumbnailUrl = null;
             else {
-                thumbnailUrl = videos.get(0).getThumbnail();
+                if (user == null) thumbnailUrl = videos.get(0).getThumbnail();
+                else {
+                    for (int j = 0; j < videos.size(); j++) {
+                        Video video = videos.get(j);
+                        if (user.getBlackList().contains(video.getUser()) == true ||
+                                user.getBlockVideos().contains(video) == true) {
+                            videos.remove(video);
+                            j--;
+                        }
+                    }
+                    if (videos.size() == 0) thumbnailUrl = null;
+                    else thumbnailUrl = videos.get(0).getThumbnail();
+                }
             }
             challengeListRes.add(new ChallengeListRes(
                     challenge.getChallengeId(),
