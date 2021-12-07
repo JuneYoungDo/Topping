@@ -36,7 +36,7 @@ public class ChallengeService {
         return true;
     }
 
-    public List<VideoListByChooseRes> getVideoListByChallengeId(Long challengeId) throws BaseException {
+    public List<VideoListByChooseRes> getVideoListByChallengeId(User user, Long challengeId) throws BaseException {
         if (isValidChallengeId(challengeId) == false)
             throw new BaseException(BaseResponseStatus.INVALID_CHALLENGE);
         List<Video> videoList = challengeRepository
@@ -44,6 +44,9 @@ public class ChallengeService {
         List<VideoListByChooseRes> videoListByChooseRes = new ArrayList();
         for (int i = 0; i < videoList.size(); i++) {
             Video video = videoList.get(i);
+            User videoUser = video.getUser();
+            if (user != null && user.getBlackList().contains(videoUser)) continue;
+            if (user != null && user.getBlockVideos().contains(video)) continue;
             videoListByChooseRes.add(new VideoListByChooseRes(
                     video.getVideoId(),
                     video.getUrl(),
@@ -79,16 +82,16 @@ public class ChallengeService {
         List<UserChallengeRes> challengeResList = new ArrayList();
         List<Challenge> challengeList = user.getChallenges();
         Collections.reverse(challengeList);
-        for(int i=0;i<challengeList.size();i++) {
+        for (int i = 0; i < challengeList.size(); i++) {
             Challenge challenge = challengeList.get(i);
             List<String> keyWords = new ArrayList();
-            for(int j=0;j<challenge.getKeyWords().size();j++) {
+            for (int j = 0; j < challenge.getKeyWords().size(); j++) {
                 keyWords.add(challenge.getKeyWords().get(j).getWord());
             }
             UserChallengeRes userChallengeRes = new UserChallengeRes(
                     challenge.getCategory().getCategoryId(),
                     challenge.getChallengeId(),
-                    challenge.getName(),keyWords);
+                    challenge.getName(), keyWords);
             challengeResList.add(userChallengeRes);
         }
         return challengeResList;
