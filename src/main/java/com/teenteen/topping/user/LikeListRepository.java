@@ -20,4 +20,8 @@ public interface LikeListRepository extends JpaRepository<LikeList,Long> {
     @Query(value = "select count(l) from like_list l " +
             "where l.mode = 3 and l.video.videoId = :videoId and l.video.deleted = false")
     Optional<Long> countFace(Long videoId);
+
+    @Query(value = "select l.mode from like_list l " +
+            "where l.user.userId = :userId and l.video.videoId = :videoId and l.video.deleted = false")
+    Optional<Long> getMode(Long userId, Long videoId);
 }

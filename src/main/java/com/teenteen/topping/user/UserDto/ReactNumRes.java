@@ -10,4 +10,5 @@ public class ReactNumRes {
     private Long good;
     private Long fire;
     private Long face;
+    private Long myReact;
 }

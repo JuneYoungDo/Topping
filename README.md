@@ -11,4 +11,6 @@
 
 * 배포 : EC2 + DOCKER
 
+* 스트리밍 : S3 + CloudFront (+ MediaConverter, Lambda) 
+
 * 개발 환경 : IntelliJ

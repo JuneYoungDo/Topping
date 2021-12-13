@@ -10,7 +10,7 @@ import java.util.Optional;
 @Repository
 public interface SuspicionUserRepository extends JpaRepository<SuspicionUser, Long> {
 
-    @Query(value = "select count(u) from suspicion_user u where u.userId = :userId")
-    Optional<Long> countReport(Long userId);
+    @Query(value = "select count(u) from suspicion_user u where u.suspicionUserId = :suspicionUserId")
+    Optional<Long> countReport(Long suspicionUserId);
 
 }

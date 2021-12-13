@@ -2,7 +2,6 @@ package com.teenteen.topping.user;
 
 import com.teenteen.topping.category.CategoryDto.MainCategoryReq;
 import com.teenteen.topping.category.CategoryService;
-import com.teenteen.topping.challenge.ChallengeDto.SearchChallengeReq;
 import com.teenteen.topping.challenge.ChallengeService;
 import com.teenteen.topping.config.BaseException;
 import com.teenteen.topping.config.BaseResponse;
@@ -103,6 +102,29 @@ public class UserController {
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
         }
     }
+
+    /**
+     * 닉네임 바꾸기
+     * [PUT] /user/info/nickname
+     */
+    @PutMapping("/user/info/nickname")
+    public ResponseEntity editUserNickname(@RequestBody @Valid NicknameReq nicknameReq, Errors errors) {
+        try {
+            Long userId = jwtService.getUserId();
+            if (errors.hasErrors()) {
+                BaseResponseStatus baseResponseStatus = BaseResponseStatus.CUSTOM_ERROR;
+                baseResponseStatus.setMessage(errors.getFieldError().getDefaultMessage());
+                return new ResponseEntity(new BaseResponse(baseResponseStatus),
+                        HttpStatus.valueOf(baseResponseStatus.getStatus()));
+            }
+            userService.editNickname(userId, nicknameReq.getNickname());
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
 
     /**
      * refreshToken을 이용한 accessToken 재발급
@@ -255,6 +277,22 @@ public class UserController {
     }
 
     /**
+     * 내 동영상 삭제하기
+     * [DELETE] /user/video/{videoId}
+     */
+    @DeleteMapping("/user/video/{videoId}")
+    public ResponseEntity deleteVideo(@PathVariable Long videoId) {
+        try {
+            Long userId = jwtService.getUserId();
+            userService.deleteVideo(userId, videoId);
+            return new ResponseEntity(200, HttpStatus.valueOf(200));
+        } catch (BaseException exception) {
+            return new ResponseEntity(new BaseResponse(exception.getStatus()),
+                    HttpStatus.valueOf(exception.getStatus().getStatus()));
+        }
+    }
+
+    /**
      * 동영상에 반응하기
      * [POST] /user/react/{videoId}
      */
@@ -279,7 +317,12 @@ public class UserController {
     @GetMapping("/video/react/{videoId}")
     public ResponseEntity reactNum(@PathVariable Long videoId) {
         try {
-            return new ResponseEntity(userService.getReactNum(videoId), HttpStatus.valueOf(200));
+            if (jwtService.getJwt() == null || jwtService.getJwt() == "") {
+                return new ResponseEntity(userService.getReactNum(null, videoId), HttpStatus.valueOf(200));
+            } else {
+                Long userId = jwtService.getUserId();
+                return new ResponseEntity(userService.getReactNum(userId, videoId), HttpStatus.valueOf(200));
+            }
         } catch (BaseException exception) {
             return new ResponseEntity(new BaseResponse(exception.getStatus()),
                     HttpStatus.valueOf(exception.getStatus().getStatus()));
