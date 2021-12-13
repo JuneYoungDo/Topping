@@ -89,6 +89,12 @@ public class UserService {
     }
 
     @Transactional
+    public void editNickname(Long userId, String nickname) {
+        User user = userRepository.getById(userId);
+        user.setNickname(nickname);
+    }
+
+    @Transactional
     public void editProfileImg(Long userId, MultipartFile multipartFile) throws IOException {
         User user = userRepository.getById(userId);
         String fileName = s3Service.uploadImg(multipartFile);
@@ -233,7 +239,7 @@ public class UserService {
         }
     }
 
-    public ReactNumRes getReactNum(Long videoId) throws BaseException {
+    public ReactNumRes getReactNum(Long userId, Long videoId) throws BaseException {
         if (!videoService.isValidVideoId(videoId)) throw new BaseException(INVALID_VIDEO_ID);
         //999이상 처리하기
         Long cGood = likeListRepository.countGood(videoId).orElse(0L);
@@ -242,7 +248,20 @@ public class UserService {
         if (cFire >= 999) cFire = 999L;
         Long cFace = likeListRepository.countFace(videoId).orElse(0L);
         if (cFace >= 999) cFace = 999L;
-        return new ReactNumRes(cGood, cFire, cFace);
+        if (userId != null)
+            return new ReactNumRes(cGood, cFire, cFace,
+                    likeListRepository.getMode(userId, videoId).orElse(0L));
+        else
+            return new ReactNumRes(cGood, cFire, cFace, 0L);
+    }
+
+    @Transactional
+    public void deleteVideo(Long userId, Long videoId) throws BaseException {
+        if (!videoService.isValidVideoId(videoId)) throw new BaseException(INVALID_VIDEO_ID);
+        User user = userRepository.getById(userId);
+        Video video = videoRepository.getById(videoId);
+        if (!user.getVideos().contains(video)) throw new BaseException(ITS_NOT_YOUR_VIDEO);
+        video.setDeleted(true);
     }
 
     @Transactional
