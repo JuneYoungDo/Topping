@@ -52,7 +52,7 @@ public class VideoService {
         String fileName = s3Service.uploadVideo(file);
         Video video = Video.builder()
                 .url(Secret.CLOUD_FRONT_URL + fileName + "/Default/HLS/" + fileName + "_540.m3u8")
-                .thumbnail(Secret.CLOUD_FRONT_URL + fileName + "/Default/Thumbnails/" + fileName + ".0000000.jpg")
+                .thumbnail(Secret.CLOUD_FRONT_URL + fileName + "/Default/Thumbnails/" + fileName + ".0000001.jpg")
                 .deleted(false)
                 .createdAt(LocalDateTime.now())
                 .challenge(challenge)
