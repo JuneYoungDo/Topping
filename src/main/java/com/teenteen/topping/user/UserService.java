@@ -18,8 +18,6 @@ import com.teenteen.topping.user.VO.User;
 import com.teenteen.topping.utils.JwtService;
 import com.teenteen.topping.utils.S3Service;
 import com.teenteen.topping.utils.Secret;
-import com.teenteen.topping.video.SuspicionVideoRepository;
-import com.teenteen.topping.video.VO.SuspicionVideo;
 import com.teenteen.topping.video.VO.Video;
 import com.teenteen.topping.video.VideoRepository;
 import com.teenteen.topping.video.VideoService;

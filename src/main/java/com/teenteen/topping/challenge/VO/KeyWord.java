@@ -1,6 +1,5 @@
 package com.teenteen.topping.challenge.VO;
 
-import com.teenteen.topping.category.VO.Category;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

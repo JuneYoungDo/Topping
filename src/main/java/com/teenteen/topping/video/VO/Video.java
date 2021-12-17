@@ -30,6 +30,6 @@ public class Video {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @OneToMany(mappedBy = "video")
+    @OneToMany(mappedBy = "video", cascade = {CascadeType.ALL}, orphanRemoval = true)
     private List<LikeList> likeLists;
 }
