@@ -1,6 +1,9 @@
 # 숏츠 동영상 플랫폼 Topping
 <img width="600" alt="image" src="https://github.com/JuneYoungDo/Topping/assets/70425091/4753c7d6-20a7-4b30-859f-96eef58b734d">
 
+- 개발 기간 : 2021.09 ~ 2021.12
+- 배포 : 2021.12
+
 <br>
 
 ## 프로젝트 소개
@@ -16,6 +19,8 @@
 - Database : RDS(MySql), S3
 - 스트리밍 : S3, CloudFront, MediaConverter, Lamda
 - 배포 및 협업 : EC2, Docker, Github 
+
+<br>
 
 ## 프로젝트 진행 및 팀원
 - 기간 : 2021.09 ~ 2021.12
